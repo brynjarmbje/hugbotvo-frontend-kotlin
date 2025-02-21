@@ -47,24 +47,24 @@ git clone https://github.com/yourusername/laera-leika-kotlin.git
 cd laera-leika-kotlin
 ```
 2. Open in Android Studio
-  - Open Android Studio.
-  - Select File > Open and navigate to the project folder.
+    - Open Android Studio.
+    - Select File > Open and navigate to the project folder.
 3. Sync Gradle
-  - Android Studio should automatically prompt you to sync.
-  - Wait until Gradle sync completes successfully.
+    - Android Studio should automatically prompt you to sync.
+    - Wait until Gradle sync completes successfully.
 4. Run on Emulator or Device
-  - Configure an Android Virtual Device (AVD) or plug in a physical device.
-  - Click the Run button in Android Studio.
-  - The app should launch, presenting a login screen.
+    - Configure an Android Virtual Device (AVD) or plug in a physical device.
+    - Click the Run button in Android Studio.
+    - The app should launch, presenting a login screen.
 5. Configure the Backend
-  - By default, the project points to https://hugbotvo.onrender.com.
-  - If your backend is at a different URL, update RetrofitClient.kt.
+    - By default, the project points to https://hugbotvo.onrender.com.
+    - If your backend is at a different URL, update RetrofitClient.kt.
 
 ## Architecture
 - Kotlin + Android: The entire codebase uses Kotlin with Jetpack libraries.
 - MVVM / Clean-ish: The project is fairly simple, but you can adapt MVVM or other patterns.
 - Navigation Component: Each screen is a Fragment. We have a nav_graph.xml that defines routes:
-  - LoginFragment → DashboardFragment → ChildSelectionFragment → GameSelectionFragment → GameFragment.
+    - LoginFragment → DashboardFragment → ChildSelectionFragment → GameSelectionFragment → GameFragment.
 - Retrofit for networking: Manages calls to endpoints like /api/auth/login, /api/admins/{adminId}, etc.
 - Glide for image loading: Dynamically fetches images from /getImage.
 - MediaPlayer for audio: Streams from /playAudio with the correct ID.
@@ -80,8 +80,8 @@ Check ApiService.kt for specifics.
 
 ## Libraries & Dependencies
 - Jetpack
-  - Navigation Component (androidx.navigation.fragment.ktx, androidx.navigation.ui.ktx)
-  - ViewModel / LiveData (optional, can be used if you prefer MVVM)
+    - Navigation Component (androidx.navigation.fragment.ktx, androidx.navigation.ui.ktx)
+    - ViewModel / LiveData (optional, can be used if you prefer MVVM)
 - Retrofit + Gson + OkHttp (for networking)
 - Glide (for image loading)
 - MediaPlayer (for audio streaming)
