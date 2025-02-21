@@ -43,7 +43,6 @@ Main modules:
 ## Setup & Installation
 1. Clone the Repo
 ```bash
-Copy
 git clone https://github.com/yourusername/laera-leika-kotlin.git
 cd laera-leika-kotlin
 ```
@@ -90,7 +89,6 @@ Check ApiService.kt for specifics.
 
 build.gradle snippet:
 ```kotlin
-Copy
 dependencies {
 implementation("com.github.bumptech.glide:glide:4.15.1")
 ksp("com.github.bumptech.glide:compiler:4.15.1")
