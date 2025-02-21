@@ -98,8 +98,6 @@ ksp("com.github.bumptech.glide:compiler:4.15.1")
 
 ## License
 ```sql
-MIT License
-
 Copyright (c) 2025 ...
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
