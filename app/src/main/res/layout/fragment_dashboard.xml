@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Header with Dashboard Title and School Name -->
+    <LinearLayout
+        android:id="@+id/headerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dashboard"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/schoolText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="School: "
+            android:textSize="18sp"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+
+    <!-- Managed Children Label -->
+    <TextView
+        android:id="@+id/childrenTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Managed Children:"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp" />
+
+    <!-- RecyclerView for children list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/childrenRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
+
+    <!-- Change Child Selections Button -->
+    <Button
+        android:id="@+id/changeChildButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Change Child Selections"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
+

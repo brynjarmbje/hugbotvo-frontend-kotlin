@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/testFragment">
+
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="com.mytestwork2.TestFragment"
+        android:label="TestFragment">
+        <action
+            android:id="@+id/action_testFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.mytestwork2.fragments.LoginFragment"
+        android:label="LoginFragment">
+        <action
+            android:id="@+id/action_loginFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.mytestwork2.fragments.DashboardFragment"
+        android:label="DashboardFragment">
+        <action
+            android:id="@+id/action_dashboardFragment_to_childSelectionFragment"
+            app:destination="@id/childSelectionFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_gameSelectionFragment"
+            app:destination="@id/gameSelectionFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/childSelectionFragment"
+        android:name="com.mytestwork2.fragments.ChildSelectionFragment"
+        android:label="ChildSelectionFragment">
+        <action
+            android:id="@+id/action_childSelectionFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameSelectionFragment"
+        android:name="com.mytestwork2.fragments.GameSelectionFragment"
+        android:label="GameSelectionFragment">
+        <action
+            android:id="@+id/action_gameSelectionFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="com.mytestwork2.fragments.GameFragment"
+        android:label="GameFragment" />
+</navigation>
