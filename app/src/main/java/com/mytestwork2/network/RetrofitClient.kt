@@ -1,5 +1,6 @@
 package com.mytestwork2.network
 
+import SimpleCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -15,6 +16,7 @@ object RetrofitClient {
         .connectTimeout(60, TimeUnit.SECONDS)  // Increase connection timeout
         .readTimeout(60, TimeUnit.SECONDS)     // Increase read timeout
         .writeTimeout(60, TimeUnit.SECONDS)    // Increase write timeout
+        .cookieJar(SimpleCookieJar)  // Persist cookies across requests
         .addInterceptor(loggingInterceptor)
         .build()
 

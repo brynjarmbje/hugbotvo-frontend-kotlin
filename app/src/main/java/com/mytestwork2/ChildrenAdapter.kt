@@ -13,7 +13,7 @@ class ChildrenAdapter(
 ) : RecyclerView.Adapter<ChildrenAdapter.ChildViewHolder>() {
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val childName: TextView = itemView.findViewById(R.id.childName)
+        val childNameText: TextView = itemView.findViewById(R.id.childNameText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
@@ -23,7 +23,7 @@ class ChildrenAdapter(
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val child = children[position]
-        holder.childName.text = child.name
+        holder.childNameText.text = child.name
         holder.itemView.setOnClickListener { onItemClick(child) }
     }
 

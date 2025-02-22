@@ -21,6 +21,9 @@
         <action
             android:id="@+id/action_loginFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_supervisorFragment"
+            app:destination="@id/supervisorFragment" />
     </fragment>
 
     <fragment
@@ -57,4 +60,14 @@
         android:id="@+id/gameFragment"
         android:name="com.mytestwork2.fragments.GameFragment"
         android:label="GameFragment" />
+
+    <fragment
+        android:id="@+id/supervisorFragment"
+        android:name="com.mytestwork2.fragments.SupervisorFragment"
+        android:label="Supervisor Dashboard">
+        <action
+            android:id="@+id/action_supervisorFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
 </navigation>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/supervisorScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#EFEFEF">
+
+    <LinearLayout
+        android:id="@+id/supervisorContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- School Name -->
+        <TextView
+            android:id="@+id/schoolNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="School: "
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Managed Children Section -->
+        <TextView
+            android:id="@+id/childrenHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Managed Children:"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/childrenRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Admins Section -->
+        <TextView
+            android:id="@+id/adminsHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admins:"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/adminsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Buttons for Supervisor Actions -->
+        <Button
+            android:id="@+id/addChildButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Child"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/deleteChildButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Child"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/addAdminButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Admin"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/deleteAdminButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Admin"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/changePasswordButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Change Admin Password"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Logout Button -->
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Log Out" />
+
+    </LinearLayout>
+</ScrollView>

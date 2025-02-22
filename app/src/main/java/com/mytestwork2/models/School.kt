@@ -1,6 +1,6 @@
 package com.mytestwork2.models
 
-class Child(
+class School (
     val id: Long? = null,
-    val name: String
-)
+    val name: String,
+    )

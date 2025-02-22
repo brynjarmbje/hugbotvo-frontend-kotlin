@@ -32,7 +32,7 @@ class ChildSelectionAdapter(
         } else {
             holder.itemView.setBackgroundResource(android.R.color.transparent)
         }
-        holder.itemView.setOnClickListener { onItemClick(child.id) }
+        holder.itemView.setOnClickListener { child.id?.let { it1 -> onItemClick(it1) } }
     }
 
     override fun getItemCount(): Int = children.size

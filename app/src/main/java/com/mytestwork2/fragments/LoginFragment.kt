@@ -92,13 +92,19 @@ class LoginFragment : Fragment() {
 
                 // Uncomment below to use the actual API call when ready:
                 val response = apiService.login(LoginRequest(username, password))
-                // On success, assume a valid response is returned with an adminId
-                val adminId = response.adminId
-
-                // Navigate to DashboardFragment (you'll create this next)
-                val bundle = Bundle().apply { putLong("adminId", adminId) }
-                findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment, bundle)
-            } catch (e: Exception) {
+                if (response.isSupervisor) {
+                    // Navigate to the Supervisor Dashboard
+                    val bundle = Bundle().apply {
+                        putLong("adminId", response.adminId)
+                    }
+                    findNavController().navigate(R.id.action_loginFragment_to_supervisorFragment, bundle)
+                } else {
+                    // Navigate to the regular Dashboard
+                    val bundle = Bundle().apply {
+                        putLong("adminId", response.adminId)
+                    }
+                    findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment, bundle)
+                }                      } catch (e: Exception) {
                 e.printStackTrace()
                 errorText.text = "Login failed. Please check credentials."
                 errorText.visibility = View.VISIBLE

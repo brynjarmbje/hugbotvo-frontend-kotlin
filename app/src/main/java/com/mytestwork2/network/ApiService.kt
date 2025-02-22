@@ -1,12 +1,15 @@
 package com.mytestwork2.network
 
+import com.mytestwork2.models.Admin
 import com.mytestwork2.models.AdminDashboardResponse
 import com.mytestwork2.models.Child
 import com.mytestwork2.models.GameData
 import com.mytestwork2.models.LoginRequest
 import com.mytestwork2.models.LoginResponse
+import com.mytestwork2.models.SupervisorDashboardResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -32,5 +35,27 @@ interface ApiService {
     // Ping method to wake up the server:
     @GET("api/ping")
     suspend fun ping(): Response<String>
+
+    @GET("api/supervisor/{adminId}/dashboard")
+    suspend fun getSupervisorDashboard(@Path("adminId") adminId: Long): SupervisorDashboardResponse
+
+    @POST("api/supervisor/child/create")
+    suspend fun createChild(@Query("adminId") adminId: Long, @Body child: Child): Child
+
+    @DELETE("api/supervisor/child/{id}")
+    suspend fun deleteChild(@Path("id") childId: Long, @Query("adminId") adminId: Long)
+
+    @POST("api/supervisor/admin/create")
+    suspend fun createAdmin(@Query("adminId") adminId: Long, @Body admin: Admin): Admin
+
+    @DELETE("api/supervisor/admin/{id}")
+    suspend fun deleteAdmin(@Path("id") targetAdminId: Long ,@Query("adminId") adminId: Long)
+
+    @POST("api/supervisor/admin/change-password")
+    suspend fun changeAdminPassword(
+        @Query("adminId") adminId: Long,
+        @Query("id") targetAdminId: Long,
+        @Query("newPassword") newPassword: String
+    ): retrofit2.Response<String>
 
 }
