@@ -103,22 +103,43 @@ class ChildSelectionFragment : Fragment() {
     private fun handleSave() {
         if (selectedChildren.isEmpty()) {
             AlertDialog.Builder(requireContext())
-                .setTitle("No Selection")
-                .setMessage("Please select at least one child.")
-                .setPositiveButton("OK", null)
+                .setTitle("Ekkert valið")
+                .setMessage("Vinsamlegast veldu allavega einn í hópinn.")
+                .setPositiveButton("Allt í lagi", null)
                 .show()
             return
         }
-        // Convert the set to a JSON array string
-        val jsonArray = JSONArray()
-        selectedChildren.forEach { jsonArray.put(it) }
-        val selectedJsonString = jsonArray.toString()
 
-        // Navigate back to the dashboard, passing adminId and selectedChildren as parameters
-        val bundle = Bundle().apply {
-            putLong("adminId", adminId)
-            putString("selectedChildren", selectedJsonString)
+        lifecycleScope.launch {
+            progressBar.visibility = View.VISIBLE
+            try {
+                // 1) Fetch actual children in the group
+                val currentGroupChildren = apiService.getChildrenInGroup(adminId)
+                val currentGroupIds = currentGroupChildren.map { it.id }.toSet()
+
+                // 2) Remove ones that used to be in the group but are no longer selected
+                currentGroupIds.forEach { existingChildId ->
+                    if (!selectedChildren.contains(existingChildId)) {
+                        apiService.deleteChildFromGroup(adminId, existingChildId!!)
+                    }
+                }
+
+                // 3) Add newly selected that aren't already in the group
+                selectedChildren.forEach { newSelectedId ->
+                    if (!currentGroupIds.contains(newSelectedId)) {
+                        apiService.addChildToGroup(adminId, newSelectedId)
+                    }
+                }
+
+                Toast.makeText(requireContext(), "Hópi breytt", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_childSelectionFragment_to_dashboardFragment)
+            } catch (e: Exception) {
+                Log.e("ChildSelectionFragment", "Error saving group: ${e.message}", e)
+                Toast.makeText(requireContext(), "Failed to update group", Toast.LENGTH_SHORT).show()
+            } finally {
+                progressBar.visibility = View.GONE
+            }
         }
-        findNavController().navigate(R.id.action_childSelectionFragment_to_dashboardFragment, bundle)
     }
+
 }

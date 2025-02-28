@@ -28,7 +28,7 @@
         android:id="@+id/username_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Notendanafn"
+        android:hint="Notandanafn"
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:background="@drawable/edit_text_background"

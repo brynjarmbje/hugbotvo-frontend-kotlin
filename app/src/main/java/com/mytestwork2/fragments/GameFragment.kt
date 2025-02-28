@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.animation.ScaleAnimation
 import android.widget.Button
 import android.widget.ImageButton
@@ -14,10 +15,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.ui.semantics.text
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.card.MaterialCardView
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
 import com.mytestwork2.network.ApiService
@@ -37,6 +41,7 @@ class GameFragment : Fragment() {
     private lateinit var audioButton: Button
     private lateinit var optionsContainer: LinearLayout
     private lateinit var headerText: TextView
+    private lateinit var instructionText: TextView
 
     private var mediaPlayer: MediaPlayer? = null
     private var selectedOption: Int? = null
@@ -59,6 +64,7 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         headerText = view.findViewById(R.id.gameHeader)
+        instructionText = view.findViewById(R.id.gameInstruction)
         backButton = view.findViewById(R.id.backButton)
         audioButton = view.findViewById(R.id.audioButton)
         optionsContainer = view.findViewById(R.id.optionsContainer)
@@ -79,7 +85,20 @@ class GameFragment : Fragment() {
                     gameType!!
                 )
                 gameData = response
-                headerText.text = gameData?.message ?: "Game Loaded"
+                when (gameType) {
+                    "letters" -> {
+                        headerText.text = "Stafa leitin!"
+                        instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
+                    }
+                    "numbers" -> {
+                        headerText.text = "Tölu leitin!"
+                        instructionText.text = "Ýttu á töluna sem þú heyrir í!"
+                    }
+                    "locate" -> {
+                        headerText.text = "Finnum dýrið!"
+                        instructionText.text = "Ýttu á dýrið á rétta staðnum!"
+                    }
+                }
                 setupOptionButtons(gameData?.optionIds ?: emptyList())
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load the game: ${e.message}", Toast.LENGTH_LONG).show()
@@ -90,41 +109,56 @@ class GameFragment : Fragment() {
 
     private fun setupOptionButtons(optionIds: List<Int>) {
         optionsContainer.removeAllViews()
-
-        // Get fixed height and margin in pixels.
+        // Load desired square size
+        val imageSize = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
         val fixedHeight = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
         val margin = resources.getDimensionPixelSize(R.dimen.option_margin)
 
-        // Define layout parameters with fixed height and match_parent width.
-        val buttonParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            fixedHeight
-        ).apply {
+        // Create LayoutParams for a square (width = height = imageSize)
+        val buttonParams = LinearLayout.LayoutParams(imageSize, imageSize).apply {
             setMargins(margin, margin, margin, margin)
         }
 
-        for (id in optionIds) {
-            // Create an ImageButton for each option.
+        optionIds.forEach { id ->
+
             val imageButton = ImageButton(requireContext()).apply {
                 layoutParams = buttonParams
-                scaleType = ImageView.ScaleType.FIT_CENTER
-                background = null  // Remove default background for a clean image.
+                // Make the image fill the rounded shape if desired:
+                scaleType = ImageView.ScaleType.CENTER_CROP
+
+                // 1) Set a background shape with rounded corners
+                background = ContextCompat.getDrawable(context, R.drawable.bg_rounded)
+                // 2) Tell the system to use that background for the outline
+                outlineProvider = ViewOutlineProvider.BACKGROUND
+                // 3) Clip the image to match the background’s round corners
+                clipToOutline = true
+                // 4) Elevation for shadow
+                elevation = 8f
+
+                // Enable ripple effect
+                isClickable = true
+                isFocusable = true
+                foreground = requireContext().obtainStyledAttributes(
+                    intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
+                ).getDrawable(0)
+
+                // Remove default button background/tint
+                // If the above shape is enough for a "clean" look, you can skip setting background = null
+                // background = null
+
                 setOnClickListener { handleOptionPress(id, this) }
             }
-            // Construct the image URL from your backend.
+
             val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=${id}&adminId=$adminId&childId=$childId"
             Log.d("GameFragment", "Loading image from URL: $imageUrl")
-            // Load image using Glide.
+
             Glide.with(this)
                 .load(imageUrl)
                 .into(imageButton)
 
-            // Add the button to the container.
             optionsContainer.addView(imageButton)
         }
     }
-
-
 
 
 
@@ -142,12 +176,12 @@ class GameFragment : Fragment() {
             anim.duration = 200
             anim.fillAfter = true
             view.startAnimation(anim)
-            Toast.makeText(requireContext(), "Correct!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Rétt!", Toast.LENGTH_SHORT).show()
             // Instead of shifting layout, show a dialog for next question
             AlertDialog.Builder(requireContext())
                 .setTitle("Húrra!")
                 .setMessage("Finnum annan staf!")
-                .setPositiveButton("Next") { dialog, _ ->
+                .setPositiveButton("Næsti!") { dialog, _ ->
                     dialog.dismiss()
                     // Reset state and fetch a new game question
                     selectedOption = null
@@ -156,7 +190,7 @@ class GameFragment : Fragment() {
                 .show()
         } else {
             // Wrong answer: provide feedback (e.g., via Toast)
-            Toast.makeText(requireContext(), "Wrong answer, try again!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
         }
     }
 

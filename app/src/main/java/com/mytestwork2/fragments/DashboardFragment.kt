@@ -72,7 +72,7 @@ class DashboardFragment : Fragment() {
                 Log.d("DashboardFragment", "Dashboard response: $response")
 
                 // Update the school name using the response from the backend
-                schoolText.text = "School: ${response.schoolName ?: "No school returned"}"
+                schoolText.text = "Skóli: ${response.schoolName ?: "No school returned"}"
 
                 // Initially use the managedChildren list from the response.
                 var fetchedChildren = response.managedChildren ?: emptyList()

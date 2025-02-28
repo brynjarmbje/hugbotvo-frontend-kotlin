@@ -22,6 +22,21 @@ interface ApiService {
     @GET("api/admins/{adminId}/children/all")
     suspend fun getAllChildren(@Path("adminId") adminId: Long): List<Child>
 
+    // get children in group
+    // /api/admins/{adminId}/children
+    @GET("api/admins/{adminId}/children")
+    suspend fun getChildrenInGroup(@Path("adminId") adminId: Long): List<Child>
+
+    // delete
+    // /api/admins/{adminId}/children/{childId}
+    @DELETE("api/admins/{adminId}/children/{childId}")
+    suspend fun deleteChildFromGroup(@Path("adminId") adminId: Long, @Path("childId") childId: Long)
+
+    // add
+    // /api/admins/{adminId}/children
+    @POST("api/admins/{adminId}/children")
+    suspend fun addChildToGroup(@Path("adminId") adminId: Long, @Query("childId") childId: Long)
+
     @GET("api/admins/{adminId}")
     suspend fun getAdminDashboard(@Path("adminId") adminId: Long): AdminDashboardResponse
 
@@ -39,17 +54,21 @@ interface ApiService {
     @GET("api/supervisor/{adminId}/dashboard")
     suspend fun getSupervisorDashboard(@Path("adminId") adminId: Long): SupervisorDashboardResponse
 
+    //@POST("api/admins/{adminId}/children")
+    //suspend fun createChild(@Path("adminId") adminId: Long, @Body child: Child): Child
+
     @POST("api/supervisor/child/create")
     suspend fun createChild(@Query("adminId") adminId: Long, @Body child: Child): Child
 
+
     @DELETE("api/supervisor/child/{id}")
-    suspend fun deleteChild(@Path("id") childId: Long, @Query("adminId") adminId: Long)
+    suspend fun deleteChild(@Path("id") childId: Long, @Query("adminId") adminId: Long): Response<Unit>
 
     @POST("api/supervisor/admin/create")
     suspend fun createAdmin(@Query("adminId") adminId: Long, @Body admin: Admin): Admin
 
     @DELETE("api/supervisor/admin/{id}")
-    suspend fun deleteAdmin(@Path("id") targetAdminId: Long ,@Query("adminId") adminId: Long)
+    suspend fun deleteAdmin(@Path("id") targetAdminId: Long ,@Query("adminId") adminId: Long): Response<Unit>
 
     @POST("api/supervisor/admin/change-password")
     suspend fun changeAdminPassword(

@@ -20,6 +20,7 @@ import com.mytestwork2.models.Child
 import com.mytestwork2.models.SupervisorDashboardResponse
 import com.mytestwork2.network.ApiService
 import com.mytestwork2.network.RetrofitClient
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 
@@ -160,7 +161,7 @@ class SupervisorFragment : Fragment() {
                 val childToDelete = childrenList[which]
                 lifecycleScope.launch {
                     try {
-                        apiService.deleteChild(adminId, childToDelete.id!!)
+                        apiService.deleteChild(childToDelete.id!!, adminId)
                         Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
                         fetchSupervisorDashboard() // Refresh dashboard
                     } catch (e: Exception) {
@@ -171,7 +172,6 @@ class SupervisorFragment : Fragment() {
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .show()
     }
-
 
     private fun promptAddAdmin() {
         val layout = LinearLayout(requireContext()).apply {
@@ -222,9 +222,18 @@ class SupervisorFragment : Fragment() {
                 val adminToDelete = adminsList[which]
                 lifecycleScope.launch {
                     try {
-                        apiService.deleteAdmin(adminId, adminToDelete.id!!)
-                        Toast.makeText(requireContext(), "Admin deleted", Toast.LENGTH_SHORT).show()
-                        fetchSupervisorDashboard() // Refresh dashboard
+                        val response = apiService.deleteAdmin(adminToDelete.id!!, adminId)
+                        if (response.isSuccessful) {
+                            // 2xx, including 204
+                            Toast.makeText(requireContext(), "Admin deleted", Toast.LENGTH_SHORT).show()
+                            fetchSupervisorDashboard()
+                        } else {
+                            // 4xx/5xx
+                            Toast.makeText(requireContext(),
+                                "Error deleting admin: ${response.code()}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     } catch (e: Exception) {
                         Toast.makeText(requireContext(), "Error deleting admin: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -233,7 +242,6 @@ class SupervisorFragment : Fragment() {
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .show()
     }
-
 
     private fun promptChangePassword() {
         val layout = LinearLayout(requireContext()).apply {

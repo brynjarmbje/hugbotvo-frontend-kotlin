@@ -106,7 +106,7 @@ class LoginFragment : Fragment() {
                     findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment, bundle)
                 }                      } catch (e: Exception) {
                 e.printStackTrace()
-                errorText.text = "Login failed. Please check credentials."
+                errorText.text = "Innskráning mistókst. Vinsamlegast reyndu aftur"
                 errorText.visibility = View.VISIBLE
             } finally {
                 progressBar.visibility = View.GONE

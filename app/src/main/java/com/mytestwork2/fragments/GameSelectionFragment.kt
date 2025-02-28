@@ -25,9 +25,9 @@ class GameSelectionFragment : Fragment() {
 
     // Define available games similar to your Expo version.
     private val availableGames = listOf(
-        GameOption(id = "letters", name = "Letters"),
-        GameOption(id = "numbers", name = "Numbers"),
-        GameOption(id = "locate", name = "Locate")
+        GameOption(id = "letters", name = "Stafir"),
+        GameOption(id = "numbers", name = "Tölur"),
+        GameOption(id = "locate", name = "Staðsetning")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
