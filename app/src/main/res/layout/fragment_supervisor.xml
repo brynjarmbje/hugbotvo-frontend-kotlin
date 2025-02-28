@@ -1,102 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/supervisorScrollView"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/supervisorRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#EFEFEF">
+    android:background="@drawable/dashboard_background"
+    android:padding="16dp">
 
-    <LinearLayout
-        android:id="@+id/supervisorContainer"
-        android:layout_width="match_parent"
+    <!-- Header (Centered) -->
+    <TextView
+        android:id="@+id/headerTitle"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:text="Supervisor Dashboard"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
 
-        <!-- School Name -->
-        <TextView
-            android:id="@+id/schoolNameText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="School: "
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+    <!-- Admins Section Label -->
+    <TextView
+        android:id="@+id/adminsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kennarar"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/headerTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp" />
 
-        <!-- Managed Children Section -->
-        <TextView
-            android:id="@+id/childrenHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Managed Children:"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+    <!-- RecyclerView for Admins -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/adminsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/adminsLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/childrenRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+    <!-- Add Admin Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/addAdminButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="+ Bæta við kennara"
+        android:textSize="16sp"
+        app:cornerRadius="16dp"
+        app:layout_constraintTop_toBottomOf="@id/adminsRecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp" />
 
-        <!-- Admins Section -->
-        <TextView
-            android:id="@+id/adminsHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Admins:"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+    <!-- Children Section Label -->
+    <TextView
+        android:id="@+id/childrenLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nemendur"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/addAdminButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/adminsRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+    <!-- RecyclerView for Children -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/childrenRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/childrenLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
 
-        <!-- Buttons for Supervisor Actions -->
-        <Button
-            android:id="@+id/addChildButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add Child"
-            android:layout_marginBottom="8dp" />
+    <!-- Add Child Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/addChildButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="+ Bæta við nemanda"
+        android:textSize="16sp"
+        app:cornerRadius="16dp"
+        app:layout_constraintTop_toBottomOf="@id/childrenRecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp" />
 
-        <Button
-            android:id="@+id/deleteChildButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Delete Child"
-            android:layout_marginBottom="8dp" />
+    <!-- Log Out Button at the Bottom -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/logoutButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Útskráning"
+        android:textSize="16sp"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="24dp" />
 
-        <Button
-            android:id="@+id/addAdminButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add Admin"
-            android:layout_marginBottom="8dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
-            android:id="@+id/deleteAdminButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Delete Admin"
-            android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/changePasswordButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Change Admin Password"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Logout Button -->
-        <Button
-            android:id="@+id/logoutButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Log Out" />
-
-    </LinearLayout>
-</ScrollView>

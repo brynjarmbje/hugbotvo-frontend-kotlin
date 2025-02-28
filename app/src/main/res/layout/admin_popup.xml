@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Popup Title -->
+    <TextView
+        android:id="@+id/adminPopupTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Admin Details"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- Filler Details -->
+    <TextView
+        android:id="@+id/adminPopupContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Filler details about the admin go here."
+        android:textSize="16sp"
+        android:layout_marginTop="16dp" />
+
+    <!-- Change Password Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/changePasswordButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Change Password"
+        app:cornerRadius="16dp"
+        android:layout_marginTop="24dp" />
+
+    <!-- Delete Admin Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/deleteAdminPopupButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Admin"
+        app:cornerRadius="16dp"
+        android:layout_marginTop="8dp" />
+
+    <!-- Close Popup Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/closeAdminPopupButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        app:cornerRadius="16dp"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

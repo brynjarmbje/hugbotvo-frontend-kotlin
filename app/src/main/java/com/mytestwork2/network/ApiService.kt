@@ -37,6 +37,19 @@ interface ApiService {
     @POST("api/admins/{adminId}/children")
     suspend fun addChildToGroup(@Path("adminId") adminId: Long, @Query("childId") childId: Long)
 
+    // New endpoint: Clear all children from Admin Group
+    @DELETE("api/admins/{adminId}/children")
+    suspend fun clearGroup(@Path("adminId") adminId: Long): Response<Unit>
+
+    // New endpoint: Get unmanaged children for Admin Group
+    @GET("api/admins/{adminId}/children/unmanaged")
+    suspend fun getUnmanagedChildren(@Path("adminId") adminId: Long): List<Child>
+
+    // New endpoint: Get all children (managed) in Admin Group
+    @GET("api/admins/{adminId}/children/managed")
+    suspend fun getAllChildrenInAdminGroup(@Path("adminId") adminId: Long): List<Child>
+
+
     @GET("api/admins/{adminId}")
     suspend fun getAdminDashboard(@Path("adminId") adminId: Long): AdminDashboardResponse
 
@@ -53,9 +66,6 @@ interface ApiService {
 
     @GET("api/supervisor/{adminId}/dashboard")
     suspend fun getSupervisorDashboard(@Path("adminId") adminId: Long): SupervisorDashboardResponse
-
-    //@POST("api/admins/{adminId}/children")
-    //suspend fun createChild(@Path("adminId") adminId: Long, @Body child: Child): Child
 
     @POST("api/supervisor/child/create")
     suspend fun createChild(@Query("adminId") adminId: Long, @Body child: Child): Child
@@ -76,5 +86,9 @@ interface ApiService {
         @Query("id") targetAdminId: Long,
         @Query("newPassword") newPassword: String
     ): retrofit2.Response<String>
+
+    // Optional: Get school name by admin ID
+    @GET("api/admins/{adminId}/school")
+    suspend fun getSchoolName(@Path("adminId") adminId: Long): Map<String, String>
 
 }

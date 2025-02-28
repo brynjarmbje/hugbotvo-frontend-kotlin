@@ -75,8 +75,16 @@ class ChildSelectionFragment : Fragment() {
         errorText.visibility = View.GONE
         lifecycleScope.launch {
             try {
-                // Fetch all children for the admin's school
-                allChildren = apiService.getAllChildren(adminId)
+                // Fetch the children that are already in the admin's group.
+                val managedChildren = apiService.getAllChildrenInAdminGroup(adminId)
+                // Fetch the children that are not managed by the admin.
+                val unmanagedChildren = apiService.getUnmanagedChildren(adminId)
+                // Combine both lists.
+                allChildren = managedChildren + unmanagedChildren
+
+                // Initialize selectedChildren with IDs of managed children.
+                selectedChildren = managedChildren.mapNotNull { it.id }.toMutableSet()
+
                 Log.d("ChildSelectionFragment", "Fetched children: $allChildren")
                 recyclerView.adapter = ChildSelectionAdapter(allChildren, selectedChildren) { childId ->
                     toggleSelection(childId)
@@ -90,6 +98,7 @@ class ChildSelectionFragment : Fragment() {
             }
         }
     }
+
 
     private fun toggleSelection(childId: Long) {
         if (selectedChildren.contains(childId)) {
@@ -113,26 +122,23 @@ class ChildSelectionFragment : Fragment() {
         lifecycleScope.launch {
             progressBar.visibility = View.VISIBLE
             try {
-                // 1) Fetch actual children in the group
-                val currentGroupChildren = apiService.getChildrenInGroup(adminId)
-                val currentGroupIds = currentGroupChildren.map { it.id }.toSet()
-
-                // 2) Remove ones that used to be in the group but are no longer selected
-                currentGroupIds.forEach { existingChildId ->
-                    if (!selectedChildren.contains(existingChildId)) {
-                        apiService.deleteChildFromGroup(adminId, existingChildId!!)
-                    }
+                // 1) Clear the entire group.
+                val clearResponse = apiService.clearGroup(adminId)
+                if (!clearResponse.isSuccessful) {
+                    throw Exception("Failed to clear group: ${clearResponse.code()}")
                 }
 
-                // 3) Add newly selected that aren't already in the group
-                selectedChildren.forEach { newSelectedId ->
-                    if (!currentGroupIds.contains(newSelectedId)) {
-                        apiService.addChildToGroup(adminId, newSelectedId)
-                    }
+                // 2) Add all selected children to the group.
+                selectedChildren.forEach { childId ->
+                    apiService.addChildToGroup(adminId, childId)
                 }
 
                 Toast.makeText(requireContext(), "Hópi breytt", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_childSelectionFragment_to_dashboardFragment)
+
+                val bundle = Bundle().apply {
+                    putLong("adminId", adminId)
+                }
+                findNavController().navigate(R.id.action_childSelectionFragment_to_dashboardFragment, bundle)
             } catch (e: Exception) {
                 Log.e("ChildSelectionFragment", "Error saving group: ${e.message}", e)
                 Toast.makeText(requireContext(), "Failed to update group", Toast.LENGTH_SHORT).show()
