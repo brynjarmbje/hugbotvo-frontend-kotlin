@@ -13,6 +13,12 @@
     <!-- Background and Surface -->
     <color name="backgroundColor">#FFFFFF</color>
     <color name="surfaceColor">#F5F5F5</color>
+    <color name="button_background">#FF6F61</color>
+    <color name="hlustaColor">#FFA08A</color>
+
+    <!-- Transparent Color -->
+    <color name="transparentColor">#00000000</color>
+    <color name="semi_transparent_white">#FFB6A6</color>
 
     <!-- Text Colors -->
     <color name="onPrimary">#FFFFFF</color>

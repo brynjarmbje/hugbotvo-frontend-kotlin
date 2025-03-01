@@ -36,6 +36,12 @@
         <action
             android:id="@+id/action_dashboardFragment_to_gameSelectionFragment"
             app:destination="@id/gameSelectionFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_creditsFragment"
+            app:destination="@id/creditsFragment" />
     </fragment>
 
     <fragment
@@ -69,5 +75,16 @@
             android:id="@+id/action_supervisorFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/creditsFragment"
+        android:name="com.mytestwork2.fragments.CreditsFragment"
+        android:label="Credits">
+        <!-- Optionally add transitions here -->
+        <action
+            android:id="@+id/action_creditsFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
+    </fragment>
+
 
 </navigation>

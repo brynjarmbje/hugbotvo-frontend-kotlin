@@ -75,17 +75,25 @@ class ChildSelectionFragment : Fragment() {
         errorText.visibility = View.GONE
         lifecycleScope.launch {
             try {
-                // Fetch the children that are already in the admin's group.
-                val managedChildren = apiService.getAllChildrenInAdminGroup(adminId)
-                // Fetch the children that are not managed by the admin.
+                // 1. Fetch all children in the admin's school.
+                val allChildrenFromSchool = apiService.getAllChildren(adminId)
+                // 2. Fetch children that are not managed by the admin.
                 val unmanagedChildren = apiService.getUnmanagedChildren(adminId)
-                // Combine both lists.
-                allChildren = managedChildren + unmanagedChildren
 
-                // Initialize selectedChildren with IDs of managed children.
+                // 3. Compute managed children as those in allChildrenFromSchool that are NOT in unmanagedChildren.
+                val managedChildren = allChildrenFromSchool.filter { child ->
+                    unmanagedChildren.none { unmanagedChild -> unmanagedChild.id == child.id }
+                }
+
+                // 4. Combine all children for display.
+                allChildren = allChildrenFromSchool.distinctBy { it.id }
+
+                // 5. Pre-select only the managed children.
                 selectedChildren = managedChildren.mapNotNull { it.id }.toMutableSet()
 
-                Log.d("ChildSelectionFragment", "Fetched children: $allChildren")
+                Log.d("ChildSelectionFragment", "All children: $allChildren")
+                Log.d("ChildSelectionFragment", "Managed children (pre-selected): $selectedChildren")
+
                 recyclerView.adapter = ChildSelectionAdapter(allChildren, selectedChildren) { childId ->
                     toggleSelection(childId)
                 }
@@ -98,7 +106,6 @@ class ChildSelectionFragment : Fragment() {
             }
         }
     }
-
 
     private fun toggleSelection(childId: Long) {
         if (selectedChildren.contains(childId)) {

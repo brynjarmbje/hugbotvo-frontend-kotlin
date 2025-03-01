@@ -40,7 +40,6 @@ class GameFragment : Fragment() {
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
     private lateinit var optionsContainer: LinearLayout
-    private lateinit var headerText: TextView
     private lateinit var instructionText: TextView
 
     private var mediaPlayer: MediaPlayer? = null
@@ -63,7 +62,6 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        headerText = view.findViewById(R.id.gameHeader)
         instructionText = view.findViewById(R.id.gameInstruction)
         backButton = view.findViewById(R.id.backButton)
         audioButton = view.findViewById(R.id.audioButton)
@@ -87,15 +85,12 @@ class GameFragment : Fragment() {
                 gameData = response
                 when (gameType) {
                     "letters" -> {
-                        headerText.text = "Stafa leitin!"
                         instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
                     }
                     "numbers" -> {
-                        headerText.text = "Tölu leitin!"
                         instructionText.text = "Ýttu á töluna sem þú heyrir í!"
                     }
                     "locate" -> {
-                        headerText.text = "Finnum dýrið!"
                         instructionText.text = "Ýttu á dýrið á rétta staðnum!"
                     }
                 }

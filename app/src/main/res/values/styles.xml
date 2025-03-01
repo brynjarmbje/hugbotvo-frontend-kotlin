@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CommonButtonStyle" parent="Widget.MaterialComponents.Button">
+        <!-- Common text appearance -->
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <!-- Rounded corners -->
+        <item name="cornerRadius">16dp</item>
+        <!-- Padding -->
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+        <!-- Optional background tint -->
+        <item name="backgroundTint">@color/button_background</item>
+    </style>
+
+
+</resources>

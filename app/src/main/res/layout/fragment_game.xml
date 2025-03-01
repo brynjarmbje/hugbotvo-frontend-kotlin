@@ -8,21 +8,6 @@
     android:background="@drawable/dashboard_background"
     android:padding="16dp">
 
-    <!-- 1) Game Header -->
-    <TextView
-        android:id="@+id/gameHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Titill leiks"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"/>
-
     <!-- 2) Instruction -->
     <TextView
         android:id="@+id/gameInstruction"
@@ -32,7 +17,7 @@
         android:textSize="18sp"
         android:textColor="@android:color/white"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/gameHeader"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
@@ -40,11 +25,16 @@
     <!-- 3) Dedicated Audio Button (Hlusta) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/audioButton"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hlusta"
-        android:textSize="16sp"
+        android:textSize="24sp"
         app:cornerRadius="16dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:backgroundTint="@color/button_background"
         app:layout_constraintTop_toBottomOf="@id/gameInstruction"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -67,11 +57,10 @@
     <!-- Back Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/backButton"
-        android:layout_width="0dp"
+        style="@style/CommonButtonStyle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Til baka"
-        android:textSize="16sp"
-        app:cornerRadius="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,5 +1,6 @@
 package com.mytestwork2
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,14 +27,18 @@ class ChildSelectionAdapter(
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val child = children[position]
         holder.childName.text = child.name
-        // Change background color if selected
-        if (selectedChildren.contains(child.id)) {
+
+        val isSelected = selectedChildren.contains(child.id)
+        Log.d("ChildSelectionAdapter", "Child id: ${child.id} selected: $isSelected")
+
+        if (isSelected) {
             holder.itemView.setBackgroundResource(android.R.color.holo_blue_light)
         } else {
             holder.itemView.setBackgroundResource(android.R.color.transparent)
         }
-        holder.itemView.setOnClickListener { child.id?.let { it1 -> onItemClick(it1) } }
+        holder.itemView.setOnClickListener { child.id?.let { onItemClick(it) } }
     }
+
 
     override fun getItemCount(): Int = children.size
 }

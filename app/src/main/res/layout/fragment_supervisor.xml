@@ -102,11 +102,10 @@
     <!-- Log Out Button at the Bottom -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/logoutButton"
+        style="@style/CommonButtonStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Útskráning"
-        android:textSize="16sp"
-        app:cornerRadius="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
