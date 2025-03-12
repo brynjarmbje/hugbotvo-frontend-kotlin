@@ -142,6 +142,7 @@ class DashboardFragment : Fragment() {
                     val bundle = Bundle().apply {
                         putLong("adminId", adminId)
                         putString("childId", child.id.toString())
+                        putString("childName", child.name)
                     }
                     findNavController().navigate(R.id.action_dashboardFragment_to_gameSelectionFragment, bundle)
                 }

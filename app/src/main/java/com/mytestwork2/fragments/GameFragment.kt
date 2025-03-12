@@ -15,13 +15,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.compose.ui.semantics.text
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.google.android.material.card.MaterialCardView
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
 import com.mytestwork2.network.ApiService
@@ -32,15 +30,22 @@ class GameFragment : Fragment() {
 
     private var adminId: Long? = null
     private var childId: String? = null
-    private var gameType: String? = null
+    private var childName: String? = null // player's name
+    private var gameType: Int = 0
 
     private lateinit var apiService: ApiService
     private var gameData: GameData? = null
+
+    // New session-related state variables
+    private var sessionId: Long? = null
+    private var currentLevel: Int = 0  // now represents the child's current level for the session
+    private var totalGamePoints: Int = 0
 
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
+    private lateinit var playerInfoTextView: TextView  // displays player's name and level
 
     private var mediaPlayer: MediaPlayer? = null
     private var selectedOption: Int? = null
@@ -49,8 +54,9 @@ class GameFragment : Fragment() {
         super.onCreate(savedInstanceState)
         adminId = arguments?.getLong("adminId")
         childId = arguments?.getString("childId")
-        gameType = arguments?.getString("gameType")
-        Log.d("GameFragment", "Parameters: adminId=$adminId, childId=$childId, gameType=$gameType")
+        childName = arguments?.getString("childName")
+        gameType = arguments?.getInt("gameType") ?: 0
+        Log.d("GameFragment", "Parameters: adminId=$adminId, childId=$childId, childName=$childName, gameType=$gameType")
         apiService = RetrofitClient.instance.create(ApiService::class.java)
     }
 
@@ -66,33 +72,55 @@ class GameFragment : Fragment() {
         backButton = view.findViewById(R.id.backButton)
         audioButton = view.findViewById(R.id.audioButton)
         optionsContainer = view.findViewById(R.id.optionsContainer)
+        playerInfoTextView = view.findViewById(R.id.playerInfoTextView)
 
         backButton.setOnClickListener { findNavController().popBackStack() }
         audioButton.setOnClickListener { playCorrectAudio() }
 
-        fetchGame()
+        // Start a new game session when the view is ready
+        startGameSession()
+    }
+
+    private fun startGameSession() {
+        lifecycleScope.launch {
+            try {
+                // Map gameType to gameId (e.g., letters -> 1, numbers -> 2, locate -> 3)
+                val gameId = gameType
+                // Call the new startSession endpoint.
+                val response = apiService.startSession(
+                    adminId!!,
+                    childId!!.toLong(),
+                    gameId
+                )
+                sessionId = response.sessionId
+                // The response returns the child's current level and overall points for this game.
+                currentLevel = response.currentLevel
+                totalGamePoints = response.totalGamePoints
+                Log.d("GameFragment", "Session started: $sessionId, Level: $currentLevel, TotalGamePoints: $totalGamePoints")
+                updatePlayerInfo()
+                // Once the session is started, fetch the first game question.
+                fetchGame()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Failed to start session: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("GameFragment", "Error starting session: ${e.message}", e)
+            }
+        }
     }
 
     private fun fetchGame() {
         lifecycleScope.launch {
             try {
-                // Call backend endpoint: /api/admins/{adminId}/children/{childId}/games?gameType=...
+                // Call backend endpoint to fetch a game question with points filtering.
                 val response = apiService.getGame(
-                    adminId!!.toLong(),
+                    adminId!!,
                     childId!!.toLong(),
-                    gameType!!
+                    gameType
                 )
                 gameData = response
                 when (gameType) {
-                    "letters" -> {
-                        instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
-                    }
-                    "numbers" -> {
-                        instructionText.text = "Ýttu á töluna sem þú heyrir í!"
-                    }
-                    "locate" -> {
-                        instructionText.text = "Ýttu á dýrið á rétta staðnum!"
-                    }
+                    1 -> instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
+                    2 -> instructionText.text = "Ýttu á töluna sem þú heyrir í!"
+                    3  -> instructionText.text = "Ýttu á dýrið á rétta staðinn!"
                 }
                 setupOptionButtons(gameData?.optionIds ?: emptyList())
             } catch (e: Exception) {
@@ -104,89 +132,94 @@ class GameFragment : Fragment() {
 
     private fun setupOptionButtons(optionIds: List<Int>) {
         optionsContainer.removeAllViews()
-        // Load desired square size
         val imageSize = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
-        val fixedHeight = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
         val margin = resources.getDimensionPixelSize(R.dimen.option_margin)
-
-        // Create LayoutParams for a square (width = height = imageSize)
         val buttonParams = LinearLayout.LayoutParams(imageSize, imageSize).apply {
             setMargins(margin, margin, margin, margin)
         }
-
         optionIds.forEach { id ->
-
             val imageButton = ImageButton(requireContext()).apply {
                 layoutParams = buttonParams
-                // Make the image fill the rounded shape if desired:
                 scaleType = ImageView.ScaleType.CENTER_CROP
-
-                // 1) Set a background shape with rounded corners
                 background = ContextCompat.getDrawable(context, R.drawable.bg_rounded)
-                // 2) Tell the system to use that background for the outline
                 outlineProvider = ViewOutlineProvider.BACKGROUND
-                // 3) Clip the image to match the background’s round corners
                 clipToOutline = true
-                // 4) Elevation for shadow
                 elevation = 8f
-
-                // Enable ripple effect
                 isClickable = true
                 isFocusable = true
                 foreground = requireContext().obtainStyledAttributes(
                     intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
                 ).getDrawable(0)
-
-                // Remove default button background/tint
-                // If the above shape is enough for a "clean" look, you can skip setting background = null
-                // background = null
-
                 setOnClickListener { handleOptionPress(id, this) }
             }
-
             val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=${id}&adminId=$adminId&childId=$childId"
             Log.d("GameFragment", "Loading image from URL: $imageUrl")
-
-            Glide.with(this)
-                .load(imageUrl)
-                .into(imageButton)
-
+            Glide.with(this).load(imageUrl).into(imageButton)
             optionsContainer.addView(imageButton)
         }
     }
 
-
-
     private fun handleOptionPress(id: Int, view: View) {
         playLetterAudio(id)
         selectedOption = id
-        if (gameData == null) return
+        if (gameData == null || sessionId == null) return
+
         if (id == gameData!!.correctId) {
-            // Correct answer: apply a scale animation for feedback
             val anim = ScaleAnimation(
                 1f, 1.2f, 1f, 1.2f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f
-            )
-            anim.duration = 200
-            anim.fillAfter = true
+            ).apply { duration = 200; fillAfter = true }
             view.startAnimation(anim)
             Toast.makeText(requireContext(), "Rétt!", Toast.LENGTH_SHORT).show()
-            // Instead of shifting layout, show a dialog for next question
+
+            lifecycleScope.launch {
+                try {
+                    val gameId = when (gameType) {
+                        1 -> 1
+                        2 -> 2
+                        3 -> 3
+                        else -> 0
+                    }
+                    // Call recordAnswer with the new endpoint structure.
+                    val response = apiService.recordAnswer(
+                        adminId!!,
+                        childId!!.toLong(),
+                        gameId,
+                        sessionId!!,
+                        gameData!!.correctId,
+                        id,
+                        gameData!!.correctId,
+                        true
+                    )
+                    // Update session level and overall points.
+                    currentLevel = response.currentSessionPoints // or response.currentLevel if renamed
+                    totalGamePoints = response.totalGamePoints
+                    Log.d("GameFragment", "Session updated: Level: $currentLevel, TotalGamePoints: $totalGamePoints")
+                    updatePlayerInfo()
+                } catch (e: Exception) {
+                    Log.e("GameFragment", "Error recording answer: ${e.message}", e)
+                }
+            }
+
             AlertDialog.Builder(requireContext())
                 .setTitle("Húrra!")
                 .setMessage("Finnum annan staf!")
                 .setPositiveButton("Næsti!") { dialog, _ ->
                     dialog.dismiss()
-                    // Reset state and fetch a new game question
                     selectedOption = null
                     fetchGame()
                 }
                 .show()
         } else {
-            // Wrong answer: provide feedback (e.g., via Toast)
             Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Update player info header with child name, level, and overall points.
+    private fun updatePlayerInfo() {
+        val nameToShow = childName ?: "Child $childId"
+        playerInfoTextView.text = "Player: $nameToShow | Level: $currentLevel | Total Points: $totalGamePoints"
     }
 
     private fun playCorrectAudio() {
@@ -196,7 +229,6 @@ class GameFragment : Fragment() {
         playAudio(url)
     }
 
-
     private fun playLetterAudio(id: Int) {
         val url = "${RetrofitClient.instance.baseUrl()}playAudio?id=$id&adminId=$adminId&childId=$childId"
         playAudio(url)
@@ -204,21 +236,13 @@ class GameFragment : Fragment() {
 
     private fun playAudio(url: String) {
         try {
-            // Create or reset the MediaPlayer
-            if (mediaPlayer == null) {
-                mediaPlayer = MediaPlayer()
-            } else {
-                mediaPlayer?.reset()
-            }
+            mediaPlayer?.reset() ?: run { mediaPlayer = MediaPlayer() }
             mediaPlayer?.apply {
                 setDataSource(url)
-                setOnPreparedListener { mp ->
-                    Log.d("GameFragment", "Audio is prepared; starting playback")
-                    mp.start()
-                }
+                setOnPreparedListener { mp -> mp.start() }
                 setOnErrorListener { mp, what, extra ->
                     Log.e("GameFragment", "MediaPlayer error: what=$what, extra=$extra")
-                    true  // indicate we handled the error
+                    true
                 }
                 prepareAsync()
             }
@@ -227,7 +251,6 @@ class GameFragment : Fragment() {
             Log.e("GameFragment", "Audio error: ${e.message}", e)
         }
     }
-
 
     override fun onDestroy() {
         super.onDestroy()

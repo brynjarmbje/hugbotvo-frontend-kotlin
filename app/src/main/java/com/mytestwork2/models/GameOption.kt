@@ -1,6 +1,8 @@
 package com.mytestwork2.models
 
 class GameOption(
-    val id: String,
-    val name: String
+    val id: Int,
+    val name: String,
+    var points: Int = 0
 )
+

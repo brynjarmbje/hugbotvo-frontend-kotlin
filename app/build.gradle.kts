@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.27"
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -68,5 +70,6 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
-
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "604662849500",
+    "project_id": "childrens-lang-game",
+    "storage_bucket": "childrens-lang-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:604662849500:android:70fa2befc500a55f857919",
+        "android_client_info": {
+          "package_name": "com.mytestwork2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2sYPojj6yKYEv7QEvPMTu5qeVMwc8Q4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

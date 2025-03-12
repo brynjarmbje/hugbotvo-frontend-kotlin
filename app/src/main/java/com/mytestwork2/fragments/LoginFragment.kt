@@ -78,19 +78,7 @@ class LoginFragment : Fragment() {
             try {
                 // First, warm up the backend.
                 warmUpBackend()
-//                // For testing: Simulate an API call
-//                kotlinx.coroutines.delay(2000L)  // Simulate network delay of 2 seconds
-//                // Create a dummy response
-//                val dummyResponse = LoginResponse(adminId = 3, token = "dummy_token")
-//                val adminId = dummyResponse.adminId
-//
-//                // Navigate to DashboardFragment using the dummy adminId
-//                findNavController().navigate(
-//                    R.id.action_loginFragment_to_dashboardFragment,
-//                    Bundle().apply { putLong("adminId", adminId) }
-//                )
 
-                // Uncomment below to use the actual API call when ready:
                 val response = apiService.login(LoginRequest(username, password))
                 if (response.isSupervisor) {
                     // Navigate to the Supervisor Dashboard

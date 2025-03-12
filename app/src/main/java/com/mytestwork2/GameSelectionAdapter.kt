@@ -24,7 +24,14 @@ class GameSelectionAdapter(
 
     override fun onBindViewHolder(holder: GameOptionViewHolder, position: Int) {
         val option = gameOptions[position]
-        holder.gameName.text = option.name
+        // Compute level based on points: Level 3 if points >= 60, level 2 if >=30, else level 1.
+        val level = when {
+            option.points >= 60 -> 3
+            option.points >= 30 -> 2
+            else -> 1
+        }
+        // Display game name along with its level.
+        holder.gameName.text = "${option.name} - Level $level"
         holder.itemView.setOnClickListener { onItemClicked(option) }
     }
 

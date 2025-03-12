@@ -4,8 +4,10 @@ import com.mytestwork2.models.Admin
 import com.mytestwork2.models.AdminDashboardResponse
 import com.mytestwork2.models.Child
 import com.mytestwork2.models.GameData
+import com.mytestwork2.models.GameSessionResponse
 import com.mytestwork2.models.LoginRequest
 import com.mytestwork2.models.LoginResponse
+import com.mytestwork2.models.SessionUpdateResponse
 import com.mytestwork2.models.SupervisorDashboardResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -57,7 +59,7 @@ interface ApiService {
     suspend fun getGame(
         @Path("adminId") adminId: Long,
         @Path("childId") childId: Long,
-        @Query("gameType") gameType: String
+        @Query("gameType") gameType: Int
     ): GameData
 
     // Ping method to wake up the server:
@@ -90,5 +92,33 @@ interface ApiService {
     // Optional: Get school name by admin ID
     @GET("api/admins/{adminId}/school")
     suspend fun getSchoolName(@Path("adminId") adminId: Long): Map<String, String>
+
+    @POST("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/start")
+    suspend fun startSession(
+        @Path("adminId") adminId: Long,
+        @Path("childId") childId: Long,
+        @Path("gameId") gameId: Int
+    ): GameSessionResponse
+
+    @POST("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/{sessionId}/answer")
+    suspend fun recordAnswer(
+        @Path("adminId") adminId: Long,
+        @Path("childId") childId: Long,
+        @Path("gameId") gameId: Int,
+        @Path("sessionId") sessionId: Long,
+        @Query("questionId") questionId: Int,
+        @Query("optionChosen") optionChosen: Int,
+        @Query("correctOption") correctOption: Int,
+        @Query("isCorrect") isCorrect: Boolean
+    ): SessionUpdateResponse
+
+    @POST("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/{sessionId}/end")
+    suspend fun endSession(
+        @Path("adminId") adminId: Long,
+        @Path("childId") childId: Long,
+        @Path("gameId") gameId: Int,
+        @Path("sessionId") sessionId: Long
+    ): Response<Unit>
+
 
 }
