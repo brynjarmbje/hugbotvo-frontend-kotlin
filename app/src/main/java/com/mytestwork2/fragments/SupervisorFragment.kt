@@ -236,17 +236,42 @@ class SupervisorFragment : Fragment() {
         builder.setView(view)
         val dialog = builder.create()
 
+        // Update title with the child's name
+        view.findViewById<TextView>(R.id.childPopupTitle).text = child.name
+
         view.findViewById<MaterialButton>(R.id.deleteChildPopupButton).setOnClickListener {
             showDeleteConfirmationDialog("child", child.id!!)
         }
         view.findViewById<MaterialButton>(R.id.closeChildPopupButton).setOnClickListener {
             dialog.dismiss()
         }
-        // Set filler details (if desired).
-        // view.findViewById<TextView>(R.id.childPopupContent).text = "Filler child details..."
+
+        // Define the default categories for games
+        val defaultCategories = listOf("Letters", "Numbers", "Locate")
+
+        lifecycleScope.launch {
+            try {
+                // Call the endpoint that returns a map of category names to points.
+                val pointsMap = apiService.getAllChildPoints(child.id!!)
+
+                // Build a string showing points per category.
+                val details = StringBuilder("Points by Game:\n")
+                defaultCategories.forEach { category ->
+                    // If the category doesn't exist in the map, default to 0.
+                    val points = pointsMap[category] ?: 0
+                    details.append("$category: $points\n")
+                }
+
+                view.findViewById<TextView>(R.id.childPopupContent).text = details.toString()
+            } catch (e: Exception) {
+                Log.e("ChildPopup", "Error fetching child points: ${e.message}", e)
+                view.findViewById<TextView>(R.id.childPopupContent).text = "Failed to load details."
+            }
+        }
 
         dialog.show()
     }
+
 
     // Confirmation dialog for deletion (using confirm_delete_popup.xml)
     private fun showDeleteConfirmationDialog(type: String, targetId: Long) {

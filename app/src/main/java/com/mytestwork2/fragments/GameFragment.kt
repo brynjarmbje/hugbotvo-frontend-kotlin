@@ -84,21 +84,23 @@ class GameFragment : Fragment() {
     private fun startGameSession() {
         lifecycleScope.launch {
             try {
-                // Map gameType to gameId (e.g., letters -> 1, numbers -> 2, locate -> 3)
+                // Use gameType as gameId (e.g., 1 for letters, etc.)
                 val gameId = gameType
-                // Call the new startSession endpoint.
-                val response = apiService.startSession(
+                // Start a new session
+                val sessionResponse = apiService.startSession(
                     adminId!!,
                     childId!!.toLong(),
                     gameId
                 )
-                sessionId = response.sessionId
-                // The response returns the child's current level and overall points for this game.
-                currentLevel = response.currentLevel
-                totalGamePoints = response.totalGamePoints
-                Log.d("GameFragment", "Session started: $sessionId, Level: $currentLevel, TotalGamePoints: $totalGamePoints")
+                sessionId = sessionResponse.sessionId
+
+                // Get the child’s overall points for this game type from the new endpoint.
+                val pointsResponse = apiService.getChildPointsByGameType(childId!!.toLong(), gameType)
+                totalGamePoints = pointsResponse.points
+
+                Log.d("GameFragment", "Session started: $sessionId, TotalGamePoints: $totalGamePoints")
                 updatePlayerInfo()
-                // Once the session is started, fetch the first game question.
+                // Now fetch a game question. (The backend will use the child’s points from its record.)
                 fetchGame()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to start session: ${e.message}", Toast.LENGTH_LONG).show()
@@ -106,6 +108,7 @@ class GameFragment : Fragment() {
             }
         }
     }
+
 
     private fun fetchGame() {
         lifecycleScope.launch {
@@ -164,7 +167,40 @@ class GameFragment : Fragment() {
         selectedOption = id
         if (gameData == null || sessionId == null) return
 
-        if (id == gameData!!.correctId) {
+        val isCorrect = id == gameData!!.correctId
+
+        // Always call recordAnswer with the proper flag
+        lifecycleScope.launch {
+            try {
+                val gameId = when (gameType) {
+                    1 -> 1
+                    2 -> 2
+                    3 -> 3
+                    else -> 0
+                }
+                val response = apiService.recordAnswer(
+                    adminId!!,
+                    childId!!.toLong(),
+                    gameId,
+                    sessionId!!,
+                    gameData!!.correctId, // The question's correct ID
+                    id,                  // The option chosen by the child
+                    gameData!!.correctId,
+                    isCorrect
+                )
+                // Update session level and overall points from the response.
+                currentLevel = response.currentSessionPoints
+                totalGamePoints = response.totalGamePoints
+                Log.d("GameFragment", "Session updated: Level: $currentLevel, TotalGamePoints: $totalGamePoints")
+                updatePlayerInfo()
+            } catch (e: Exception) {
+                Log.e("GameFragment", "Error recording answer: ${e.message}", e)
+            }
+        }
+
+        // Display feedback based on the answer
+        if (isCorrect) {
+            // Correct answer: animate and show positive feedback.
             val anim = ScaleAnimation(
                 1f, 1.2f, 1f, 1.2f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
@@ -172,36 +208,6 @@ class GameFragment : Fragment() {
             ).apply { duration = 200; fillAfter = true }
             view.startAnimation(anim)
             Toast.makeText(requireContext(), "Rétt!", Toast.LENGTH_SHORT).show()
-
-            lifecycleScope.launch {
-                try {
-                    val gameId = when (gameType) {
-                        1 -> 1
-                        2 -> 2
-                        3 -> 3
-                        else -> 0
-                    }
-                    // Call recordAnswer with the new endpoint structure.
-                    val response = apiService.recordAnswer(
-                        adminId!!,
-                        childId!!.toLong(),
-                        gameId,
-                        sessionId!!,
-                        gameData!!.correctId,
-                        id,
-                        gameData!!.correctId,
-                        true
-                    )
-                    // Update session level and overall points.
-                    currentLevel = response.currentSessionPoints // or response.currentLevel if renamed
-                    totalGamePoints = response.totalGamePoints
-                    Log.d("GameFragment", "Session updated: Level: $currentLevel, TotalGamePoints: $totalGamePoints")
-                    updatePlayerInfo()
-                } catch (e: Exception) {
-                    Log.e("GameFragment", "Error recording answer: ${e.message}", e)
-                }
-            }
-
             AlertDialog.Builder(requireContext())
                 .setTitle("Húrra!")
                 .setMessage("Finnum annan staf!")
@@ -212,6 +218,7 @@ class GameFragment : Fragment() {
                 }
                 .show()
         } else {
+            // Incorrect answer: show a toast prompting to try again.
             Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
         }
     }
@@ -219,8 +226,9 @@ class GameFragment : Fragment() {
     // Update player info header with child name, level, and overall points.
     private fun updatePlayerInfo() {
         val nameToShow = childName ?: "Child $childId"
-        playerInfoTextView.text = "Player: $nameToShow | Level: $currentLevel | Total Points: $totalGamePoints"
+        playerInfoTextView.text = "Player: $nameToShow | Total Points: $totalGamePoints"
     }
+
 
     private fun playCorrectAudio() {
         if (gameData == null) return

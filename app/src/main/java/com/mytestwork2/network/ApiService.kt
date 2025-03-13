@@ -3,6 +3,7 @@ package com.mytestwork2.network
 import com.mytestwork2.models.Admin
 import com.mytestwork2.models.AdminDashboardResponse
 import com.mytestwork2.models.Child
+import com.mytestwork2.models.ChildPointsResponse
 import com.mytestwork2.models.GameData
 import com.mytestwork2.models.GameSessionResponse
 import com.mytestwork2.models.LoginRequest
@@ -14,6 +15,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -120,5 +122,49 @@ interface ApiService {
         @Path("sessionId") sessionId: Long
     ): Response<Unit>
 
+    /**
+     * Get points for a child by game type.
+     */
+    @GET("api/points/children/{childId}/games/{gameType}")
+    suspend fun getChildPointsByGameType(
+        @Path("childId") childId: Long,
+        @Path("gameType") gameType: Int
+    ): ChildPointsResponse
+
+    /**
+     * Get all points for a child across all categories.
+     */
+    @GET("api/points/children/{childId}")
+    suspend fun getAllChildPoints(
+        @Path("childId") childId: Long
+    ): Map<String, Int>
+
+    /**
+     * Add points to a child for a specific game type.
+     */
+    @POST("api/points/children/{childId}/games/{gameType}/add")
+    suspend fun addPointsToChild(
+        @Path("childId") childId: Long,
+        @Path("gameType") gameType: Int,
+        @Query("points") points: Int
+    ): Map<String, Any>
+
+    /**
+     * Set points for a child for a specific game type (overwrite previous value).
+     */
+    @PUT("api/points/children/{childId}/games/{gameType}")
+    suspend fun setChildPoints(
+        @Path("childId") childId: Long,
+        @Path("gameType") gameType: Int,
+        @Query("points") points: Int
+    ): Map<String, Any>
+
+    /**
+     * Get total points for a child across all categories.
+     */
+    @GET("api/points/children/{childId}/total")
+    suspend fun getTotalChildPoints(
+        @Path("childId") childId: Long
+    ): Map<String, Any>
 
 }
