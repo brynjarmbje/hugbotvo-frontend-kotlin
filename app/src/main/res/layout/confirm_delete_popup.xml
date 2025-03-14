@@ -12,7 +12,7 @@
         android:id="@+id/confirmDeleteText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Are you sure you want to delete?"
+        android:text="Ertu viss?"
         android:textSize="18sp"
         android:textStyle="bold"
         android:gravity="center" />
@@ -29,7 +29,7 @@
             android:id="@+id/confirmDeleteYesButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Yes"
+            android:text="Já"
             app:cornerRadius="16dp"
             android:layout_marginEnd="16dp" />
 
@@ -37,7 +37,7 @@
             android:id="@+id/confirmDeleteNoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No"
+            android:text="Nei"
             app:cornerRadius="16dp" />
     </LinearLayout>
 

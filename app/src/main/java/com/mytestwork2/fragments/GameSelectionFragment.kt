@@ -7,13 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mytestwork2.GameSelectionAdapter
 import com.mytestwork2.R
 import com.mytestwork2.models.GameOption
+import com.mytestwork2.network.ApiService
+import com.mytestwork2.network.RetrofitClient
+import kotlinx.coroutines.launch
 
 class GameSelectionFragment : Fragment() {
 
@@ -26,29 +31,26 @@ class GameSelectionFragment : Fragment() {
     private var childId: String? = null
     private var childName: String? = null // player's name
 
-    // Simulate available games with points.
+    // List of available games updated from the backend
     private val availableGames = mutableListOf<GameOption>()
+
+    // Create an instance of your API service
+    private lateinit var apiService: ApiService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Retrieve the adminId, childId and childName from the fragment arguments.
         arguments?.let {
             adminId = it.getLong("adminId")
             childId = it.getString("childId")
-            childName = it.getString("childName") // retrieve child's name
+            childName = it.getString("childName")
         }
-        // Simulate the points for each game option.
-        // You might later replace these values with a real API call.
-        availableGames.add(GameOption(id = 1, name = "Stafir", points = 27))
-        availableGames.add(GameOption(id = 2, name = "Tölur", points = 35))
-        availableGames.add(GameOption(id = 3, name = "Staðsetning", points = 0))
+        apiService = RetrofitClient.instance.create(ApiService::class.java)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_game_selection, container, false)
     }
 
@@ -58,27 +60,60 @@ class GameSelectionFragment : Fragment() {
         backButton = view.findViewById(R.id.backButton)
         playerHeader = view.findViewById(R.id.playerHeader)
 
-        // Calculate total points from all games.
-        val totalPoints = availableGames.sumOf { it.points }
-        // Update the header with the player's name and total points.
-        playerHeader.text = "${childName ?: "Child $childId"}! Þú ert með $totalPoints stig! Hvað viltu læra!?"
-
-        // Set up RecyclerView with a LinearLayoutManager and our adapter.
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = GameSelectionAdapter(availableGames) { selectedGame ->
-            Log.d("GameSelectionFragment", "Selected game: ${selectedGame.id}")
-            // Navigate to GameFragment with parameters.
-            val bundle = Bundle().apply {
-                putLong("adminId", adminId!!)
-                putString("childId", childId)
-                putString("childName", childName) // pass child's name
-                putInt("gameType", selectedGame.id)
-            }
-            findNavController().navigate(R.id.action_gameSelectionFragment_to_gameFragment, bundle)
-        }
-
         backButton.setOnClickListener {
             findNavController().popBackStack()
         }
+
+        // Instead of hardcoding points, fetch the real points from the backend.
+        fetchAndDisplayChildPoints()
+    }
+
+    private fun fetchAndDisplayChildPoints() {
+        lifecycleScope.launch {
+            try {
+                // Game types: 1 = Letters, 2 = Numbers, 3 = Locate
+                val gameTypes = listOf(1, 2, 3)
+                availableGames.clear()
+                var totalPoints = 0
+
+                // Loop over each game type to fetch the child's points.
+                for (gameType in gameTypes) {
+                    // Call the endpoint that returns points for the child in a specific game type.
+                    val response = apiService.getChildPointsByGameType(childId!!.toLong(), gameType)
+                    val points = response.points
+                    totalPoints += points
+
+                    // Map gameType to a display name (adjust as needed)
+                    val gameName = when (gameType) {
+                        1 -> "Stafir"
+                        2 -> "Tölur"
+                        3 -> "Staðsetning"
+                        else -> "Unknown"
+                    }
+                    availableGames.add(GameOption(id = gameType, name = gameName, points = points))
+                }
+
+                // Update the header with the child's name and total points.
+                playerHeader.text = "${childName ?: "Child $childId"}! Þú ert með $totalPoints stig! Hvað viltu læra!?"
+
+                // Set up RecyclerView adapter using the updated availableGames list.
+                recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                recyclerView.adapter = GameSelectionAdapter(availableGames) { selectedGame ->
+                    Log.d("GameSelectionFragment", "Selected game: ${selectedGame.id}")
+                    // Navigate to GameFragment with the actual points and gameType.
+                    val bundle = Bundle().apply {
+                        putLong("adminId", adminId!!)
+                        putString("childId", childId)
+                        putString("childName", childName)
+                        putInt("gameType", selectedGame.id)
+                    }
+                    findNavController().navigate(R.id.action_gameSelectionFragment_to_gameFragment, bundle)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error loading child points: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("GameSelectionFragment", "Error fetching child points", e)
+            }
+        }
     }
 }
+

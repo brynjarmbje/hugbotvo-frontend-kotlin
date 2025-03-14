@@ -19,7 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import com.squareup.picasso.Picasso
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
 import com.mytestwork2.network.ApiService
@@ -36,19 +36,22 @@ class GameFragment : Fragment() {
     private lateinit var apiService: ApiService
     private var gameData: GameData? = null
 
-    // New session-related state variables
+    // Session-related state variables
     private var sessionId: Long? = null
-    private var currentLevel: Int = 0  // now represents the child's current level for the session
+    private var currentLevel: Int = 0  // session-specific points/level
     private var totalGamePoints: Int = 0
 
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
-    private lateinit var playerInfoTextView: TextView  // displays player's name and level
+    private lateinit var playerInfoTextView: TextView  // displays child's name and total points
 
     private var mediaPlayer: MediaPlayer? = null
     private var selectedOption: Int? = null
+
+    // Using viewLifecycleOwner.lifecycleScope for coroutine work
+    private val fragmentScope get() = viewLifecycleOwner.lifecycleScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,9 +65,7 @@ class GameFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_game, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_game, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -74,7 +75,12 @@ class GameFragment : Fragment() {
         optionsContainer = view.findViewById(R.id.optionsContainer)
         playerInfoTextView = view.findViewById(R.id.playerInfoTextView)
 
-        backButton.setOnClickListener { findNavController().popBackStack() }
+        backButton.setOnClickListener {
+            // End current session before navigating back
+            endCurrentSession {
+                findNavController().popBackStack()
+            }
+        }
         audioButton.setOnClickListener { playCorrectAudio() }
 
         // Start a new game session when the view is ready
@@ -82,11 +88,9 @@ class GameFragment : Fragment() {
     }
 
     private fun startGameSession() {
-        lifecycleScope.launch {
+        fragmentScope.launch {
             try {
-                // Use gameType as gameId (e.g., 1 for letters, etc.)
                 val gameId = gameType
-                // Start a new session
                 val sessionResponse = apiService.startSession(
                     adminId!!,
                     childId!!.toLong(),
@@ -94,13 +98,12 @@ class GameFragment : Fragment() {
                 )
                 sessionId = sessionResponse.sessionId
 
-                // Get the child’s overall points for this game type from the new endpoint.
+                // Get overall points using the new endpoint.
                 val pointsResponse = apiService.getChildPointsByGameType(childId!!.toLong(), gameType)
                 totalGamePoints = pointsResponse.points
 
                 Log.d("GameFragment", "Session started: $sessionId, TotalGamePoints: $totalGamePoints")
                 updatePlayerInfo()
-                // Now fetch a game question. (The backend will use the child’s points from its record.)
                 fetchGame()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to start session: ${e.message}", Toast.LENGTH_LONG).show()
@@ -109,21 +112,25 @@ class GameFragment : Fragment() {
         }
     }
 
+    private val gameDataCache = mutableMapOf<String, GameData>() // Cache for game data
 
     private fun fetchGame() {
-        lifecycleScope.launch {
+        val cacheKey = "$adminId-$childId-$gameType"
+        if (gameDataCache.containsKey(cacheKey)) {
+            gameData = gameDataCache[cacheKey]
+            setupOptionButtons(gameData?.optionIds ?: emptyList())
+            return
+        }
+
+        fragmentScope.launch {
             try {
-                // Call backend endpoint to fetch a game question with points filtering.
-                val response = apiService.getGame(
-                    adminId!!,
-                    childId!!.toLong(),
-                    gameType
-                )
+                val response = apiService.getGame(adminId!!, childId!!.toLong(), gameType)
                 gameData = response
+                gameDataCache[cacheKey] = response // Cache the response
                 when (gameType) {
                     1 -> instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
                     2 -> instructionText.text = "Ýttu á töluna sem þú heyrir í!"
-                    3  -> instructionText.text = "Ýttu á dýrið á rétta staðinn!"
+                    3 -> instructionText.text = "Ýttu á dýrið á rétta staðinn!"
                 }
                 setupOptionButtons(gameData?.optionIds ?: emptyList())
             } catch (e: Exception) {
@@ -155,9 +162,18 @@ class GameFragment : Fragment() {
                 ).getDrawable(0)
                 setOnClickListener { handleOptionPress(id, this) }
             }
-            val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=${id}&adminId=$adminId&childId=$childId"
+            val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
             Log.d("GameFragment", "Loading image from URL: $imageUrl")
-            Glide.with(this).load(imageUrl).into(imageButton)
+
+            // Use Picasso for image loading
+            Picasso.get()
+                .load(imageUrl)
+                .resize(imageSize, imageSize)
+                .centerCrop()
+                .placeholder(R.drawable.team) // Add a placeholder image
+                .error(R.drawable.paper) // Add an error image
+                .into(imageButton)
+
             optionsContainer.addView(imageButton)
         }
     }
@@ -169,26 +185,19 @@ class GameFragment : Fragment() {
 
         val isCorrect = id == gameData!!.correctId
 
-        // Always call recordAnswer with the proper flag
-        lifecycleScope.launch {
+        fragmentScope.launch {
             try {
-                val gameId = when (gameType) {
-                    1 -> 1
-                    2 -> 2
-                    3 -> 3
-                    else -> 0
-                }
+                val gameId = gameType
                 val response = apiService.recordAnswer(
                     adminId!!,
                     childId!!.toLong(),
                     gameId,
                     sessionId!!,
                     gameData!!.correctId, // The question's correct ID
-                    id,                  // The option chosen by the child
+                    id,                  // The option chosen
                     gameData!!.correctId,
                     isCorrect
                 )
-                // Update session level and overall points from the response.
                 currentLevel = response.currentSessionPoints
                 totalGamePoints = response.totalGamePoints
                 Log.d("GameFragment", "Session updated: Level: $currentLevel, TotalGamePoints: $totalGamePoints")
@@ -198,9 +207,7 @@ class GameFragment : Fragment() {
             }
         }
 
-        // Display feedback based on the answer
         if (isCorrect) {
-            // Correct answer: animate and show positive feedback.
             val anim = ScaleAnimation(
                 1f, 1.2f, 1f, 1.2f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
@@ -218,17 +225,15 @@ class GameFragment : Fragment() {
                 }
                 .show()
         } else {
-            // Incorrect answer: show a toast prompting to try again.
             Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Update player info header with child name, level, and overall points.
+    // Update header with child's name and overall points.
     private fun updatePlayerInfo() {
         val nameToShow = childName ?: "Child $childId"
         playerInfoTextView.text = "Player: $nameToShow | Total Points: $totalGamePoints"
     }
-
 
     private fun playCorrectAudio() {
         if (gameData == null) return
@@ -244,8 +249,8 @@ class GameFragment : Fragment() {
 
     private fun playAudio(url: String) {
         try {
-            mediaPlayer?.reset() ?: run { mediaPlayer = MediaPlayer() }
-            mediaPlayer?.apply {
+            mediaPlayer?.release() // Release any existing MediaPlayer instance
+            mediaPlayer = MediaPlayer().apply {
                 setDataSource(url)
                 setOnPreparedListener { mp -> mp.start() }
                 setOnErrorListener { mp, what, extra ->
@@ -260,8 +265,38 @@ class GameFragment : Fragment() {
         }
     }
 
+    // Helper to end the current session via the API.
+    private fun endCurrentSession(onComplete: (() -> Unit)? = null) {
+        sessionId?.let { sid ->
+            lifecycleScope.launch {
+                try {
+                    val response = apiService.endSession(
+                        adminId!!,
+                        childId!!.toLong(),
+                        gameType,
+                        sid
+                    )
+                    Log.d("GameFragment", "Session $sid ended successfully")
+                    sessionId = null
+                } catch (e: Exception) {
+                    Log.e("GameFragment", "Error ending session: ${e.message}", e)
+                } finally {
+                    onComplete?.invoke()
+                }
+            }
+        } ?: onComplete?.invoke()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // End session when fragment is paused
+        endCurrentSession()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.release()
+        // Ensure session is ended when fragment is destroyed
+        endCurrentSession()
     }
 }

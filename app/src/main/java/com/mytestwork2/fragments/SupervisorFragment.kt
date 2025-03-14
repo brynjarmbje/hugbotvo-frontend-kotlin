@@ -246,8 +246,15 @@ class SupervisorFragment : Fragment() {
             dialog.dismiss()
         }
 
-        // Define the default categories for games
+        // Define the default categories for games (using English keys as returned from backend)
         val defaultCategories = listOf("Letters", "Numbers", "Locate")
+
+        // Map from English keys to Icelandic names.
+        val categoryMap = mapOf(
+            "Letters" to "Stafir",
+            "Numbers" to "Tölur",
+            "Locate" to "Staðsetning"
+        )
 
         lifecycleScope.launch {
             try {
@@ -255,20 +262,20 @@ class SupervisorFragment : Fragment() {
                 val pointsMap = apiService.getAllChildPoints(child.id!!)
 
                 // Build a string showing points per category.
-                val details = StringBuilder("Points by Game:\n")
+                val details = StringBuilder("Stig í leikjum:\n")
                 defaultCategories.forEach { category ->
+                    // Convert category name to Icelandic.
+                    val icelandicName = categoryMap[category] ?: category
                     // If the category doesn't exist in the map, default to 0.
                     val points = pointsMap[category] ?: 0
-                    details.append("$category: $points\n")
+                    details.append("$icelandicName: $points\n")
                 }
-
                 view.findViewById<TextView>(R.id.childPopupContent).text = details.toString()
             } catch (e: Exception) {
                 Log.e("ChildPopup", "Error fetching child points: ${e.message}", e)
                 view.findViewById<TextView>(R.id.childPopupContent).text = "Failed to load details."
             }
         }
-
         dialog.show()
     }
 

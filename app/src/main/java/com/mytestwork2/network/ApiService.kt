@@ -14,6 +14,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -128,7 +129,8 @@ interface ApiService {
     @GET("api/points/children/{childId}/games/{gameType}")
     suspend fun getChildPointsByGameType(
         @Path("childId") childId: Long,
-        @Path("gameType") gameType: Int
+        @Path("gameType") gameType: Int,
+        @Header("Cache-Control") cacheControl: String = "public, max-age=60"
     ): ChildPointsResponse
 
     /**

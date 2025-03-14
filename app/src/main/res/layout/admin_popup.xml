@@ -12,7 +12,7 @@
         android:id="@+id/adminPopupTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Admin Details"
+        android:text="Kennari :)"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center" />
@@ -22,7 +22,7 @@
         android:id="@+id/adminPopupContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Filler details about the admin go here."
+        android:text="Upplýsingar um kennara."
         android:textSize="16sp"
         android:layout_marginTop="16dp" />
 
@@ -31,7 +31,7 @@
         android:id="@+id/changePasswordButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Change Password"
+        android:text="Breyta lykilorði"
         app:cornerRadius="16dp"
         android:layout_marginTop="24dp" />
 
@@ -40,7 +40,7 @@
         android:id="@+id/deleteAdminPopupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delete Admin"
+        android:text="Fjarlægja kennara"
         app:cornerRadius="16dp"
         android:layout_marginTop="8dp" />
 
@@ -49,7 +49,7 @@
         android:id="@+id/closeAdminPopupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Close"
+        android:text="Loka"
         app:cornerRadius="16dp"
         android:layout_marginTop="16dp" />
 

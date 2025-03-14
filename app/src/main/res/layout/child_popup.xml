@@ -12,7 +12,7 @@
         android:id="@+id/childPopupTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Child Details"
+        android:text="Leikmaður"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center" />
@@ -22,7 +22,7 @@
         android:id="@+id/childPopupContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Filler details about the child go here."
+        android:text="Upplýsingar um leikmann"
         android:textSize="16sp"
         android:layout_marginTop="16dp" />
 
@@ -31,7 +31,7 @@
         android:id="@+id/deleteChildPopupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delete Child"
+        android:text="Fjarlægja"
         app:cornerRadius="16dp"
         android:layout_marginTop="24dp" />
 
@@ -40,7 +40,7 @@
         android:id="@+id/closeChildPopupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Close"
+        android:text="Loka"
         app:cornerRadius="16dp"
         android:layout_marginTop="16dp" />
 
