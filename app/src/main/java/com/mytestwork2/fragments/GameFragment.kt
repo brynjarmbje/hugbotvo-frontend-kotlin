@@ -2,6 +2,7 @@ package com.mytestwork2.fragments
 
 import android.app.AlertDialog
 import android.media.MediaPlayer
+import android.media.SoundPool
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -30,7 +31,7 @@ class GameFragment : Fragment() {
 
     private var adminId: Long? = null
     private var childId: String? = null
-    private var childName: String? = null // player's name
+    private var childName: String? = null
     private var gameType: Int = 0
 
     private lateinit var apiService: ApiService
@@ -38,16 +39,22 @@ class GameFragment : Fragment() {
 
     // Session-related state variables
     private var sessionId: Long? = null
-    private var currentLevel: Int = 0  // session-specific points/level
+    private var currentLevel: Int = 0
     private var totalGamePoints: Int = 0
 
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
-    private lateinit var playerInfoTextView: TextView  // displays child's name and total points
+    private lateinit var playerInfoTextView: TextView
 
     private var mediaPlayer: MediaPlayer? = null
+    private var questionMediaPlayer: MediaPlayer? = null // Add this variable
+    private var soundPool: SoundPool? = null
+    private var correctSoundId: Int = 0
+    private var incorrectSoundId: Int = 0
+    private var buttonClickSoundId: Int = 0
+
     private var selectedOption: Int? = null
 
     // Using viewLifecycleOwner.lifecycleScope for coroutine work
@@ -75,16 +82,36 @@ class GameFragment : Fragment() {
         optionsContainer = view.findViewById(R.id.optionsContainer)
         playerInfoTextView = view.findViewById(R.id.playerInfoTextView)
 
+        // Initialize SoundPool for sound effects
+        soundPool = SoundPool.Builder().setMaxStreams(5).build()
+        correctSoundId = soundPool?.load(requireContext(), R.raw.correct_answer, 1) ?: 0
+        incorrectSoundId = soundPool?.load(requireContext(), R.raw.incorrect_answer, 1) ?: 0
+        buttonClickSoundId = soundPool?.load(requireContext(), R.raw.button_click, 1) ?: 0
+
+        // Play background music at low volume
+        playBackgroundMusic()
+
         backButton.setOnClickListener {
+            soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             // End current session before navigating back
             endCurrentSession {
                 findNavController().popBackStack()
             }
         }
-        audioButton.setOnClickListener { playCorrectAudio() }
+        audioButton.setOnClickListener {
+            soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
+            playCorrectAudio()
+        }
 
         // Start a new game session when the view is ready
         startGameSession()
+    }
+
+    private fun playBackgroundMusic() {
+        mediaPlayer = MediaPlayer.create(requireContext(), R.raw.background_music)
+        mediaPlayer?.isLooping = true
+        mediaPlayer?.setVolume(0.2f, 0.2f)
+        mediaPlayer?.start()
     }
 
     private fun startGameSession() {
@@ -116,17 +143,13 @@ class GameFragment : Fragment() {
 
     private fun fetchGame() {
         val cacheKey = "$adminId-$childId-$gameType"
-        if (gameDataCache.containsKey(cacheKey)) {
-            gameData = gameDataCache[cacheKey]
-            setupOptionButtons(gameData?.optionIds ?: emptyList())
-            return
-        }
+        gameDataCache.remove(cacheKey) // Clear the cache for this key
 
         fragmentScope.launch {
             try {
                 val response = apiService.getGame(adminId!!, childId!!.toLong(), gameType)
                 gameData = response
-                gameDataCache[cacheKey] = response // Cache the response
+                gameDataCache[cacheKey] = response // Cache the new response
                 when (gameType) {
                     1 -> instructionText.text = "Ýttu á stafinn sem þú heyrir í!"
                     2 -> instructionText.text = "Ýttu á töluna sem þú heyrir í!"
@@ -160,7 +183,10 @@ class GameFragment : Fragment() {
                 foreground = requireContext().obtainStyledAttributes(
                     intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
                 ).getDrawable(0)
-                setOnClickListener { handleOptionPress(id, this) }
+                setOnClickListener {
+                    soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
+                    handleOptionPress(id, this)
+                }
             }
             val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
             Log.d("GameFragment", "Loading image from URL: $imageUrl")
@@ -208,6 +234,7 @@ class GameFragment : Fragment() {
         }
 
         if (isCorrect) {
+            soundPool?.play(correctSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             val anim = ScaleAnimation(
                 1f, 1.2f, 1f, 1.2f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
@@ -225,6 +252,7 @@ class GameFragment : Fragment() {
                 }
                 .show()
         } else {
+            soundPool?.play(incorrectSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
         }
     }
@@ -235,16 +263,43 @@ class GameFragment : Fragment() {
         playerInfoTextView.text = "Player: $nameToShow | Total Points: $totalGamePoints"
     }
 
-    private fun playCorrectAudio() {
-        if (gameData == null) return
-        val url = "${RetrofitClient.instance.baseUrl()}playAudio?id=${gameData!!.correctId}&adminId=$adminId&childId=$childId"
-        Log.d("GameFragment", "Playing correct audio from URL: $url")
-        playAudio(url)
+    private fun playLetterAudio(id: Int) {
+        val audioUrl = "${RetrofitClient.instance.baseUrl()}playAudio?id=$id&adminId=$adminId&childId=$childId"
+        playQuestionAudio(audioUrl)
     }
 
-    private fun playLetterAudio(id: Int) {
-        val url = "${RetrofitClient.instance.baseUrl()}playAudio?id=$id&adminId=$adminId&childId=$childId"
-        playAudio(url)
+    private fun playCorrectAudio() {
+        if (gameData == null) return
+        val audioUrl = "${RetrofitClient.instance.baseUrl()}playAudio?id=${gameData!!.correctId}&adminId=$adminId&childId=$childId"
+        playQuestionAudio(audioUrl)
+    }
+
+    private fun playQuestionAudio(audioUrl: String) {
+        // Pause background music
+        mediaPlayer?.pause()
+
+        // Release any existing question MediaPlayer
+        questionMediaPlayer?.release()
+
+        // Initialize and play the question audio
+        questionMediaPlayer = MediaPlayer().apply {
+            setDataSource(audioUrl)
+            setOnPreparedListener { mp ->
+                mp.setVolume(0.5f, 0.5f) // Lower the volume of question audio
+                mp.start()
+            }
+            setOnCompletionListener {
+                // Resume background music when question audio finishes
+                mediaPlayer?.start()
+            }
+            setOnErrorListener { mp, what, extra ->
+                Log.e("GameFragment", "Question audio error: what=$what, extra=$extra")
+                // Resume background music on error
+                mediaPlayer?.start()
+                true
+            }
+            prepareAsync()
+        }
     }
 
     private fun playAudio(url: String) {
@@ -296,6 +351,8 @@ class GameFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.release()
+        questionMediaPlayer?.release()
+        soundPool?.release()
         // Ensure session is ended when fragment is destroyed
         endCurrentSession()
     }
