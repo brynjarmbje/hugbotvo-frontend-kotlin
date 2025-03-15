@@ -41,6 +41,7 @@
         <item name="strokeColor">@color/neon_blue</item>
         <item name="rippleColor">@color/neon_blue</item>
         <item name="shapeAppearanceOverlay">@style/WhiteButtonShapeAppearanceOverlay</item>
+        <item name="android:elevation">16dp</item>
     </style>
 
     <style name="WhiteButtonShapeAppearanceOverlay" parent="">

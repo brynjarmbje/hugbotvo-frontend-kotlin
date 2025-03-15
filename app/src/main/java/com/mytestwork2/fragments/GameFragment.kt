@@ -1,6 +1,7 @@
 package com.mytestwork2.fragments
 
 import android.app.AlertDialog
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -8,6 +9,7 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -71,6 +73,7 @@ class GameFragment : Fragment() {
 
     // Using viewLifecycleOwner.lifecycleScope for coroutine work
     private val fragmentScope get() = viewLifecycleOwner.lifecycleScope
+    private lateinit var loadingAnimation: LottieAnimationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +91,7 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        loadingAnimation = view.findViewById(R.id.loadingAnimation)
 
         // Initialize views
         instructionText = view.findViewById(R.id.gameInstruction)
@@ -144,6 +148,16 @@ class GameFragment : Fragment() {
         startGameSession()
     }
 
+    private fun showLoadingAnimation() {
+        loadingAnimation.visibility = View.VISIBLE
+        loadingAnimation.playAnimation()
+    }
+
+    private fun hideLoadingAnimation() {
+        loadingAnimation.cancelAnimation()
+        loadingAnimation.visibility = View.GONE
+    }
+
     private fun playBounceAnimation(view: View) {
         val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
         view.startAnimation(animation)
@@ -173,6 +187,7 @@ class GameFragment : Fragment() {
 
                 Log.d("GameFragment", "Session started: $sessionId, TotalGamePoints: $totalGamePoints")
                 updatePlayerInfo()
+                showLoadingAnimation()
                 fetchGame()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to start session: ${e.message}", Toast.LENGTH_LONG).show()
@@ -202,10 +217,20 @@ class GameFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to load the game: ${e.message}", Toast.LENGTH_LONG).show()
                 Log.e("GameFragment", "Error fetching game: ${e.message}", e)
             }
+            finally {
+                // Always hide the animation, even if there's an error.
+                hideLoadingAnimation()
+            }
         }
     }
 
     private fun setupOptionButtons(optionIds: List<Int>) {
+        // First, clear any running animations on existing children.
+        for (i in 0 until optionsContainer.childCount) {
+            val child = optionsContainer.getChildAt(i)
+            child.clearAnimation()
+        }
+        // Now remove all old views.
         optionsContainer.removeAllViews()
         val imageSize = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
         val margin = resources.getDimensionPixelSize(R.dimen.option_margin)
@@ -226,38 +251,58 @@ class GameFragment : Fragment() {
                 iconSize = (imageSize * 0.8).toInt()
             }
 
+            button.rippleColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.neon_blue))
+            val newElevation = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                16f,  // adjust this value as needed
+                resources.displayMetrics
+            )
+            button.elevation = newElevation
+
+
             // Build the image URL as before.
             val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
+
+            // Create a Target and assign it to a variable so it's not garbage collected.
+            val target = object : com.squareup.picasso.Target {
+                override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
+                    button.icon = BitmapDrawable(resources, bitmap)
+                    // Optionally clear the tag after loading
+                    button.tag = null
+                }
+
+                override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                    button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.paper)
+                    button.tag = null
+                }
+
+                override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+                    button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
+                }
+            }
+            // Store the target as a tag on the button to keep a strong reference.
+            button.tag = target
+
             Picasso.get()
                 .load(imageUrl)
                 .resize(imageSize, imageSize)
                 .centerCrop()
-                .into(object : com.squareup.picasso.Target {
-                    override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
-                        // Set the loaded bitmap as the button icon.
-                        button.icon = BitmapDrawable(resources, bitmap)
-                    }
+                .into(target)
 
-                    override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
-                        // Use an error drawable if the image load fails.
-                        button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.paper)
-                    }
-
-                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
-                        // Optionally reapply the placeholder while loading.
-                        button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
-                    }
-                })
+            val sideSlide = AnimationUtils.loadAnimation(requireContext(), R.anim.side_slide)
+            button.startAnimation(sideSlide)
 
             button.setOnClickListener {
                 soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
                 handleOptionPress(id, button)
+                val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
+                button.startAnimation(bounceAnimation)
             }
 
             optionsContainer.addView(button)
         }
-    }
 
+    }
 
     private fun showCustomToast(message: String) {
         val inflater = layoutInflater
@@ -283,11 +328,19 @@ class GameFragment : Fragment() {
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
+            .setCancelable(true) // or false if you want to force them to tap Næsti
             .create()
 
+        // If the user presses the dialog button:
         dialogButton.setOnClickListener {
             dialog.dismiss()
+        }
+
+        // If the user taps outside or presses back to dismiss the dialog:
+        dialog.setOnDismissListener {
+            // Always fetch the next question once the dialog goes away.
             selectedOption = null
+            showLoadingAnimation()
             fetchGame()
         }
 
