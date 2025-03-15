@@ -14,6 +14,43 @@
         <!-- Optional background tint -->
         <item name="backgroundTint">@color/button_background</item>
     </style>
+    <style name="AdventurousFlashyButtonStyle" parent="Widget.MaterialComponents.Button">
+        <!-- Common text appearance -->
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <!-- Rounded corners -->
+        <item name="cornerRadius">8dp</item>
+        <!-- Padding -->
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+        <!-- Use a custom background drawable (make sure backgroundTint is transparent so the drawable shows through) -->
+        <item name="backgroundTint">@drawable/awesome_button_background</item>
+        <item name="strokeWidth">3dp</item>
+        <item name="strokeColor">@color/neon_blue</item>
+        <!-- Optional: set a ripple color so the press effect is gold -->
+        <item name="rippleColor">@color/gold</item>
+    </style>
+    <style name="OptionButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@android:color/transparent</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="backgroundTint">@android:color/white</item>
+        <item name="android:backgroundTint">@android:color/white</item>
+        <item name="strokeWidth">3dp</item>
+        <item name="strokeColor">@color/neon_blue</item>
+        <item name="rippleColor">@color/neon_blue</item>
+        <item name="shapeAppearanceOverlay">@style/WhiteButtonShapeAppearanceOverlay</item>
+    </style>
+
+    <style name="WhiteButtonShapeAppearanceOverlay" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+        <item name="android:fillColor">@android:color/white</item>
+    </style>
+
+
+
 
 
 </resources>

@@ -23,4 +23,9 @@
     <!-- Text Colors -->
     <color name="onPrimary">#FFFFFF</color>
     <color name="onBackground">#333333</color>
+    <color name="neon_blue">#00FFFF</color>
+    <color name="gold">#FFD700</color>
+    <color name="button_background_2">#824BD1</color>
+    <color name="button_background_pressed">#3E139E</color>
+
 </resources>

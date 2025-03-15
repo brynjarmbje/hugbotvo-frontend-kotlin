@@ -1,15 +1,20 @@
 package com.mytestwork2.fragments
 
 import android.app.AlertDialog
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.media.SoundPool
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.ScaleAnimation
 import android.widget.Button
@@ -24,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.button.MaterialButton
 import com.squareup.picasso.Picasso
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
@@ -49,7 +55,7 @@ class GameFragment : Fragment() {
 
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
-    private lateinit var audioButtonContainer: FrameLayout
+    private lateinit var audioButtonContainer: MaterialButton
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
     private lateinit var playerInfoTextView: TextView
@@ -109,15 +115,30 @@ class GameFragment : Fragment() {
         }
 
         audioButtonContainer.setOnClickListener {
-            playBounceAnimation(it)
+            // Load bounce animation and set its listener.
+            val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
+            bounceAnimation.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                    // Optionally do something when the bounce starts.
+                }
+                override fun onAnimationEnd(animation: Animation?) {
+                    // When bounce ends, start pulse animation.
+                    val pulseAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_animation)
+                    audioButtonContainer.startAnimation(pulseAnimation)
+                }
+                override fun onAnimationRepeat(animation: Animation?) {
+                    // Not used.
+                }
+            })
+            audioButtonContainer.startAnimation(bounceAnimation)
             soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             playCorrectAudio()
         }
 
-        // Add pulse animation to the cloud button
-        val cloudAnimation = view.findViewById<LottieAnimationView>(R.id.cloudAnimation)
+
+        // Add pulse animation to the audiobutton button
         val pulseAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_animation)
-        cloudAnimation.startAnimation(pulseAnimation)
+        audioButtonContainer.startAnimation(pulseAnimation)
 
         // Start a new game session when the view is ready
         startGameSession()
@@ -192,55 +213,51 @@ class GameFragment : Fragment() {
             setMargins(margin, margin, margin, margin)
         }
 
-        // Define the corner radius for the images (e.g., 24dp)
-        val cornerRadius = resources.getDimension(R.dimen.option_corner_radius)
-
         optionIds.forEach { id ->
-            // Create a FrameLayout to hold the background and the image
-            val frameLayout = FrameLayout(requireContext()).apply {
+            // Create a MaterialButton using a themed context with your custom style.
+            val button = MaterialButton(ContextThemeWrapper(requireContext(), R.style.OptionButtonStyle)).apply {
                 layoutParams = buttonParams
-                isClickable = true
-                isFocusable = true
-                foreground = requireContext().obtainStyledAttributes(
-                    intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
-                ).getDrawable(0) // Ripple effect for click feedback
-                background = ContextCompat.getDrawable(requireContext(), R.drawable.option_background) // Static background
+                text = ""  // We only show the image as an icon
+                iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START // With no text, the icon will be centered.
+                iconPadding = 0
+                iconTint = null  // Avoid tinting the loaded image
+                // Set a placeholder icon (same as your previous placeholder)
+                icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
+                iconSize = (imageSize * 0.8).toInt()
             }
 
-            // Add ImageView for the option
-            val imageView = ImageView(requireContext()).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT
-                ).apply {
-                    gravity = Gravity.CENTER
-                }
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                clipToOutline = true // Ensure the image respects the rounded corners
-            }
-            frameLayout.addView(imageView)
-
-            // Load the image using Picasso with rounded corners
+            // Build the image URL as before.
             val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
             Picasso.get()
                 .load(imageUrl)
                 .resize(imageSize, imageSize)
                 .centerCrop()
-                .transform(RoundedCornersTransformation(cornerRadius)) // Apply rounded corners
-                .placeholder(R.drawable.team) // Add a placeholder image
-                .error(R.drawable.paper) // Add an error image
-                .into(imageView)
+                .into(object : com.squareup.picasso.Target {
+                    override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
+                        // Set the loaded bitmap as the button icon.
+                        button.icon = BitmapDrawable(resources, bitmap)
+                    }
 
-            // Set click listener
-            frameLayout.setOnClickListener {
+                    override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                        // Use an error drawable if the image load fails.
+                        button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.paper)
+                    }
+
+                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+                        // Optionally reapply the placeholder while loading.
+                        button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
+                    }
+                })
+
+            button.setOnClickListener {
                 soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-                handleOptionPress(id, frameLayout)
+                handleOptionPress(id, button)
             }
 
-            // Add the FrameLayout to the options container
-            optionsContainer.addView(frameLayout)
+            optionsContainer.addView(button)
         }
     }
+
 
     private fun showCustomToast(message: String) {
         val inflater = layoutInflater
@@ -364,24 +381,6 @@ class GameFragment : Fragment() {
                 true
             }
             prepareAsync()
-        }
-    }
-
-    private fun playAudio(url: String) {
-        try {
-            mediaPlayer?.release() // Release any existing MediaPlayer instance
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
-                setOnPreparedListener { mp -> mp.start() }
-                setOnErrorListener { mp, what, extra ->
-                    Log.e("GameFragment", "MediaPlayer error: what=$what, extra=$extra")
-                    true
-                }
-                prepareAsync()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Audio error", Toast.LENGTH_SHORT).show()
-            Log.e("GameFragment", "Audio error: ${e.message}", e)
         }
     }
 

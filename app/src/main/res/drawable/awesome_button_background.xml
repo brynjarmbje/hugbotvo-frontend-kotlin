@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed state: gold border and slightly different background (you can adjust the solid color as needed) -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <!-- Optional: a different solid color for pressed state -->
+            <solid android:color="@color/gold" />
+            <corners android:radius="16dp" />
+            <stroke android:width="2dp" android:color="@color/gold" />
+        </shape>
+    </item>
+    <!-- Default state: neon blue border -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#96766181" />
+            <corners android:radius="16dp" />
+            <stroke android:width="3dp" android:color="@color/neon_blue" />
+        </shape>
+    </item>
+</selector>

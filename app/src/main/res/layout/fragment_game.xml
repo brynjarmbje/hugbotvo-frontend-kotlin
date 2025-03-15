@@ -27,12 +27,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Player: Unknown | Level: 1"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textColor="@android:color/black"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="28dp"/>
 
     <!-- Instruction -->
     <TextView
@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Leiðbeiningar..."
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textColor="@android:color/black"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/playerInfoTextView"
@@ -49,62 +49,29 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="0dp"/>
 
-    <!-- Audio Button with Sparkles -->
-    <FrameLayout
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/audioButtonContainer"
+        style="@style/AdventurousFlashyButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Hlusta"
+        android:textSize="28sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-condensed"
         app:layout_constraintTop_toBottomOf="@id/gameInstruction"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="0dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackgroundBorderless">
-
-        <!-- Lottie Animation Background -->
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/cloudAnimation"
-            android:layout_width="200dp"
-            android:layout_height="120dp"
-            app:lottie_rawRes="@raw/cloud"
-            app:lottie_loop="true"
-            app:lottie_autoPlay="true"
-            app:lottie_speed="1.0"
-            android:scaleType="centerCrop" />
-
-        <!-- Button Text -->
-        <TextView
-            android:id="@+id/audioButtonText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hlusta"
-            android:textSize="20sp"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center"
-            android:paddingTop="16dp"
-            android:paddingBottom="0dp"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp" />
-
-        <!-- Sparkles Animation -->
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/sparklesAnimation"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/sparkles_animation"
-            android:layout_gravity="center" />
-    </FrameLayout>
+        android:layout_marginTop="4dp" />
 
     <!-- Options Container -->
     <LinearLayout
         android:id="@+id/optionsContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        style="@style/OptionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
+        app:backgroundTint="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/audioButtonContainer"
         app:layout_constraintBottom_toTopOf="@id/backButton"
         app:layout_constraintStart_toStartOf="parent"
@@ -115,11 +82,10 @@
     <!-- Back Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/backButton"
+        style="@style/AdventurousFlashyButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Til baka"
-        android:background="@drawable/button_background_with_shadow"
-        android:textColor="@android:color/black"
         android:stateListAnimator="@null"
         android:onClick="onButtonClick"
         app:layout_constraintBottom_toBottomOf="parent"
