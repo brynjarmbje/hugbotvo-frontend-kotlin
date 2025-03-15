@@ -5,12 +5,15 @@ import android.media.MediaPlayer
 import android.media.SoundPool
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.animation.AnimationUtils
 import android.view.animation.ScaleAnimation
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -20,11 +23,13 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieAnimationView
 import com.squareup.picasso.Picasso
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
 import com.mytestwork2.network.ApiService
 import com.mytestwork2.network.RetrofitClient
+import com.mytestwork2.transformations.RoundedCornersTransformation
 import kotlinx.coroutines.launch
 
 class GameFragment : Fragment() {
@@ -44,6 +49,7 @@ class GameFragment : Fragment() {
 
     private lateinit var backButton: Button
     private lateinit var audioButton: Button
+    private lateinit var audioButtonContainer: FrameLayout
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
     private lateinit var playerInfoTextView: TextView
@@ -76,9 +82,11 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Initialize views
         instructionText = view.findViewById(R.id.gameInstruction)
         backButton = view.findViewById(R.id.backButton)
-        audioButton = view.findViewById(R.id.audioButton)
+        audioButtonContainer = view.findViewById(R.id.audioButtonContainer)
         optionsContainer = view.findViewById(R.id.optionsContainer)
         playerInfoTextView = view.findViewById(R.id.playerInfoTextView)
 
@@ -91,26 +99,39 @@ class GameFragment : Fragment() {
         // Play background music at low volume
         playBackgroundMusic()
 
+        // Set click listeners
         backButton.setOnClickListener {
+            playBounceAnimation(it)
             soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            // End current session before navigating back
             endCurrentSession {
                 findNavController().popBackStack()
             }
         }
-        audioButton.setOnClickListener {
+
+        audioButtonContainer.setOnClickListener {
+            playBounceAnimation(it)
             soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             playCorrectAudio()
         }
+
+        // Add pulse animation to the cloud button
+        val cloudAnimation = view.findViewById<LottieAnimationView>(R.id.cloudAnimation)
+        val pulseAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_animation)
+        cloudAnimation.startAnimation(pulseAnimation)
 
         // Start a new game session when the view is ready
         startGameSession()
     }
 
+    private fun playBounceAnimation(view: View) {
+        val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
+        view.startAnimation(animation)
+    }
+
     private fun playBackgroundMusic() {
         mediaPlayer = MediaPlayer.create(requireContext(), R.raw.background_music)
         mediaPlayer?.isLooping = true
-        mediaPlayer?.setVolume(0.2f, 0.2f)
+        mediaPlayer?.setVolume(0.1f, 0.1f)
         mediaPlayer?.start()
     }
 
@@ -170,38 +191,90 @@ class GameFragment : Fragment() {
         val buttonParams = LinearLayout.LayoutParams(imageSize, imageSize).apply {
             setMargins(margin, margin, margin, margin)
         }
+
+        // Define the corner radius for the images (e.g., 24dp)
+        val cornerRadius = resources.getDimension(R.dimen.option_corner_radius)
+
         optionIds.forEach { id ->
-            val imageButton = ImageButton(requireContext()).apply {
+            // Create a FrameLayout to hold the background and the image
+            val frameLayout = FrameLayout(requireContext()).apply {
                 layoutParams = buttonParams
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                background = ContextCompat.getDrawable(context, R.drawable.bg_rounded)
-                outlineProvider = ViewOutlineProvider.BACKGROUND
-                clipToOutline = true
-                elevation = 8f
                 isClickable = true
                 isFocusable = true
                 foreground = requireContext().obtainStyledAttributes(
                     intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
-                ).getDrawable(0)
-                setOnClickListener {
-                    soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-                    handleOptionPress(id, this)
-                }
+                ).getDrawable(0) // Ripple effect for click feedback
+                background = ContextCompat.getDrawable(requireContext(), R.drawable.option_background) // Static background
             }
-            val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
-            Log.d("GameFragment", "Loading image from URL: $imageUrl")
 
-            // Use Picasso for image loading
+            // Add ImageView for the option
+            val imageView = ImageView(requireContext()).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                ).apply {
+                    gravity = Gravity.CENTER
+                }
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                clipToOutline = true // Ensure the image respects the rounded corners
+            }
+            frameLayout.addView(imageView)
+
+            // Load the image using Picasso with rounded corners
+            val imageUrl = "${RetrofitClient.instance.baseUrl()}getImage?id=$id&adminId=$adminId&childId=$childId"
             Picasso.get()
                 .load(imageUrl)
                 .resize(imageSize, imageSize)
                 .centerCrop()
+                .transform(RoundedCornersTransformation(cornerRadius)) // Apply rounded corners
                 .placeholder(R.drawable.team) // Add a placeholder image
                 .error(R.drawable.paper) // Add an error image
-                .into(imageButton)
+                .into(imageView)
 
-            optionsContainer.addView(imageButton)
+            // Set click listener
+            frameLayout.setOnClickListener {
+                soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
+                handleOptionPress(id, frameLayout)
+            }
+
+            // Add the FrameLayout to the options container
+            optionsContainer.addView(frameLayout)
         }
+    }
+
+    private fun showCustomToast(message: String) {
+        val inflater = layoutInflater
+        val layout = inflater.inflate(R.layout.custom_toast, requireView().findViewById(R.id.toast_layout))
+        val text = layout.findViewById<TextView>(R.id.toast_message)
+        text.text = message
+
+        val toast = Toast(requireContext())
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = layout
+        toast.show()
+    }
+
+    private fun showCustomAlertDialog(title: String, message: String, buttonText: String) {
+        val dialogView = layoutInflater.inflate(R.layout.custom_dialog, null)
+        val dialogTitle = dialogView.findViewById<TextView>(R.id.dialog_title)
+        val dialogMessage = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val dialogButton = dialogView.findViewById<Button>(R.id.dialog_button)
+
+        dialogTitle.text = title
+        dialogMessage.text = message
+        dialogButton.text = buttonText
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        dialogButton.setOnClickListener {
+            dialog.dismiss()
+            selectedOption = null
+            fetchGame()
+        }
+
+        dialog.show()
     }
 
     private fun handleOptionPress(id: Int, view: View) {
@@ -241,26 +314,18 @@ class GameFragment : Fragment() {
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f
             ).apply { duration = 200; fillAfter = true }
             view.startAnimation(anim)
-            Toast.makeText(requireContext(), "Rétt!", Toast.LENGTH_SHORT).show()
-            AlertDialog.Builder(requireContext())
-                .setTitle("Húrra!")
-                .setMessage("Finnum annan staf!")
-                .setPositiveButton("Næsti!") { dialog, _ ->
-                    dialog.dismiss()
-                    selectedOption = null
-                    fetchGame()
-                }
-                .show()
+            showCustomToast("🌟 Rétt! Þú ert frábær! 🌟") // Custom toast for correct answer
+            showCustomAlertDialog("Húrra!", "Þú fannst stafinn! Förum í næsta áfanga! 🚀", "Næsti!")
         } else {
             soundPool?.play(incorrectSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            Toast.makeText(requireContext(), "Næstum því! Reyndu aftur :)", Toast.LENGTH_SHORT).show()
+            showCustomToast("🌈 Næstum því! Reyndu aftur! 🌈") // Custom toast for incorrect answer
         }
     }
 
     // Update header with child's name and overall points.
     private fun updatePlayerInfo() {
         val nameToShow = childName ?: "Child $childId"
-        playerInfoTextView.text = "Player: $nameToShow | Total Points: $totalGamePoints"
+        playerInfoTextView.text = "Hæ, $nameToShow! Þú ert með $totalGamePoints stig!"
     }
 
     private fun playLetterAudio(id: Int) {

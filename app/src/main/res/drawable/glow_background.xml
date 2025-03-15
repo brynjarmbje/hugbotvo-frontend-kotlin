@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/glow_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#00000000" /> <!-- Transparent background -->
+    <stroke
+        android:width="4dp"
+        android:color="#80FFFFFF" /> <!-- Semi-transparent white glow -->
+    <corners android:radius="24dp" />
+</shape>

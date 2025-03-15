@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Larger dimensions for tablets -->
+    <dimen name="option_fixed_height">150dp</dimen>
+    <dimen name="option_margin">16dp</dimen>
+    <dimen name="option_corner_radius">32dp</dimen>
+    <dimen name="option_image_padding">16dp</dimen>
+    <dimen name="text_size_small">20sp</dimen>
+    <dimen name="text_size_medium">24sp</dimen>
+    <dimen name="text_size_large">28sp</dimen>
+</resources>

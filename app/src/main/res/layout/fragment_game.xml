@@ -1,12 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/gameContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/game_background"
-    android:padding="16dp">
+    android:padding="0dp">
+
+    <!-- Lottie Animation Background -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/backgroundAnimation"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:lottie_rawRes="@raw/mountain_background"
+        app:lottie_loop="true"
+        app:lottie_autoPlay="true"
+        app:lottie_speed="1.0"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Player Info TextView -->
     <TextView
@@ -15,11 +28,11 @@
         android:layout_height="wrap_content"
         android:text="Player: Unknown | Level: 1"
         android:textSize="16sp"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="16dp"/>
 
     <!-- Instruction -->
     <TextView
@@ -28,47 +41,53 @@
         android:layout_height="wrap_content"
         android:text="Leiðbeiningar..."
         android:textSize="18sp"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/playerInfoTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="0dp"
-        android:layout_height="8dp"
-        android:progressDrawable="@drawable/progress_bar_gradient"
-        app:layout_constraintTop_toBottomOf="@id/gameInstruction"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="0dp"/>
 
     <!-- Audio Button with Sparkles -->
     <FrameLayout
         android:id="@+id/audioButtonContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
+        app:layout_constraintTop_toBottomOf="@id/gameInstruction"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="0dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/audioButton"
+        <!-- Lottie Animation Background -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/cloudAnimation"
+            android:layout_width="200dp"
+            android:layout_height="120dp"
+            app:lottie_rawRes="@raw/cloud"
+            app:lottie_loop="true"
+            app:lottie_autoPlay="true"
+            app:lottie_speed="1.0"
+            android:scaleType="centerCrop" />
+
+        <!-- Button Text -->
+        <TextView
+            android:id="@+id/audioButtonText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hlusta"
-            android:textSize="24sp"
-            android:background="@drawable/button_gradient"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center"
+            android:paddingTop="16dp"
+            android:paddingBottom="0dp"
             android:paddingLeft="24dp"
-            android:paddingRight="24dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"/>
+            android:paddingRight="24dp" />
 
+        <!-- Sparkles Animation -->
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/sparklesAnimation"
             android:layout_width="100dp"
@@ -76,7 +95,7 @@
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
             app:lottie_rawRes="@raw/sparkles_animation"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center" />
     </FrameLayout>
 
     <!-- Options Container -->
@@ -90,20 +109,22 @@
         app:layout_constraintBottom_toTopOf="@id/backButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="0dp"
         android:layout_marginBottom="16dp" />
 
     <!-- Back Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/backButton"
-        style="@style/CommonButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Til baka"
-        android:background="@drawable/button_gradient"
+        android:background="@drawable/button_background_with_shadow"
+        android:textColor="@android:color/black"
+        android:stateListAnimator="@null"
+        android:onClick="onButtonClick"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="20dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/button_background_with_shadow.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shadow -->
+    <item>
+        <shape>
+            <solid android:color="#80000000" /> <!-- Semi-transparent black -->
+            <corners android:radius="24dp" />
+            <padding
+                android:bottom="4dp"
+                android:left="4dp"
+                android:right="4dp"
+                android:top="4dp" />
+        </shape>
+    </item>
+
+    <!-- Button background -->
+    <item>
+        <shape>
+            <solid android:color="#F0F8FF" /> <!-- Light blue -->
+            <stroke
+                android:width="4dp"
+                android:color="#00FFFF" /> <!-- Neon blue -->
+            <stroke
+                android:width="2dp"
+                android:color="#FFD700" /> <!-- Gold -->
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/option_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#F0F8FF" /> <!-- Light blue background -->
+    <stroke
+        android:width="4dp"
+        android:color="#00FFFF" /> <!-- Neon blue border -->
+    <corners android:radius="24dp" /> <!-- Rounded corners -->
+</shape>

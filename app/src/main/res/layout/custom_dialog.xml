@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/custom_dialog.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_background"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+<TextView
+android:id="@+id/dialog_title"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:textColor="#FFD700"
+    android:textSize="24sp"
+    android:textStyle="bold"
+    android:shadowColor="#FF0000"
+    android:shadowDx="2"
+    android:shadowDy="2"
+    android:shadowRadius="4"/>
+
+<TextView
+android:id="@+id/dialog_message"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:textColor="@android:color/white"
+android:textSize="18sp"
+android:layout_marginTop="16dp"
+android:gravity="center"/>
+
+<Button
+android:id="@+id/dialog_button"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Næsti!"
+android:textColor="@android:color/white"
+android:background="@drawable/button_background"
+    android:layout_marginTop="24dp"
+    android:padding="12dp"/>
+    </LinearLayout>
