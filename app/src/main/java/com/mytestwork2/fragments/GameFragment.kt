@@ -11,18 +11,13 @@ import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.ScaleAnimation
 import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -37,7 +32,6 @@ import com.mytestwork2.R
 import com.mytestwork2.models.GameData
 import com.mytestwork2.network.ApiService
 import com.mytestwork2.network.RetrofitClient
-import com.mytestwork2.transformations.RoundedCornersTransformation
 import kotlinx.coroutines.launch
 
 class GameFragment : Fragment() {
@@ -187,6 +181,7 @@ class GameFragment : Fragment() {
 
                 Log.d("GameFragment", "Session started: $sessionId, TotalGamePoints: $totalGamePoints")
                 updatePlayerInfo()
+                updateBackgroundAnimation()
                 showLoadingAnimation()
                 fetchGame()
             } catch (e: Exception) {
@@ -232,7 +227,8 @@ class GameFragment : Fragment() {
         }
         // Now remove all old views.
         optionsContainer.removeAllViews()
-        val imageSize = resources.getDimensionPixelSize(R.dimen.option_fixed_height)
+        val screenHeight = resources.displayMetrics.heightPixels
+        val imageSize = (screenHeight * 0.2).toInt()  // 20% of screen width
         val margin = resources.getDimensionPixelSize(R.dimen.option_margin)
         val buttonParams = LinearLayout.LayoutParams(imageSize, imageSize).apply {
             setMargins(margin, margin, margin, margin)
@@ -371,6 +367,7 @@ class GameFragment : Fragment() {
                 totalGamePoints = response.totalGamePoints
                 Log.d("GameFragment", "Session updated: Level: $currentLevel, TotalGamePoints: $totalGamePoints")
                 updatePlayerInfo()
+                updateBackgroundAnimation()
             } catch (e: Exception) {
                 Log.e("GameFragment", "Error recording answer: ${e.message}", e)
             }
@@ -435,6 +432,17 @@ class GameFragment : Fragment() {
             }
             prepareAsync()
         }
+    }
+
+    private fun updateBackgroundAnimation() {
+        val backgroundAnimationView = requireView().findViewById<LottieAnimationView>(R.id.backgroundAnimation)
+        when (totalGamePoints) {
+            in 0..19 -> backgroundAnimationView.setAnimation(R.raw.mountain_background)
+            in 20..39 -> backgroundAnimationView.setAnimation(R.raw.mountain_background_sunny)
+            in 40..59 -> backgroundAnimationView.setAnimation(R.raw.mountain_background_green)
+            else -> backgroundAnimationView.setAnimation(R.raw.mountain_background_blue)
+        }
+        backgroundAnimationView.playAnimation()
     }
 
     // Helper to end the current session via the API.

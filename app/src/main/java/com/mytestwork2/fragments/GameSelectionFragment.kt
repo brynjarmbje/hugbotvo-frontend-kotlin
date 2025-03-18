@@ -92,6 +92,8 @@ class GameSelectionFragment : Fragment() {
                     }
                     availableGames.add(GameOption(id = gameType, name = gameName, points = points))
                 }
+                // After adding the existing game types, add the new Shake Challenge.
+                availableGames.add(GameOption(id = 4, name = "Hrista!"))
 
                 // Update the header with the child's name and total points.
                 playerHeader.text = "${childName ?: "Child $childId"}! Þú ert með $totalPoints stig! Hvað viltu læra!?"
@@ -99,16 +101,26 @@ class GameSelectionFragment : Fragment() {
                 // Set up RecyclerView adapter using the updated availableGames list.
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = GameSelectionAdapter(availableGames) { selectedGame ->
-                    Log.d("GameSelectionFragment", "Selected game: ${selectedGame.id}")
-                    // Navigate to GameFragment with the actual points and gameType.
-                    val bundle = Bundle().apply {
-                        putLong("adminId", adminId!!)
-                        putString("childId", childId)
-                        putString("childName", childName)
-                        putInt("gameType", selectedGame.id)
+                    if (selectedGame.id == 4) {
+                        // Navigate to the ShakeGameFragment for the Shake Challenge.
+                        val bundle = Bundle().apply {
+                            putLong("adminId", adminId!!)
+                            putString("childId", childId)
+                            putString("childName", childName)
+                        }
+                        findNavController().navigate(R.id.action_gameSelectionFragment_to_shakeGameFragment, bundle)
+                    } else {
+                        // Navigate to the regular GameFragment for other game types.
+                        val bundle = Bundle().apply {
+                            putLong("adminId", adminId!!)
+                            putString("childId", childId)
+                            putString("childName", childName)
+                            putInt("gameType", selectedGame.id)
+                        }
+                        findNavController().navigate(R.id.action_gameSelectionFragment_to_gameFragment, bundle)
                     }
-                    findNavController().navigate(R.id.action_gameSelectionFragment_to_gameFragment, bundle)
                 }
+
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading child points: ${e.message}", Toast.LENGTH_LONG).show()
                 Log.e("GameSelectionFragment", "Error fetching child points", e)

@@ -7,12 +7,27 @@
     android:layout_height="match_parent"
     android:background="@drawable/dashboard_background">
 
-    <!-- Main Content -->
+    <!-- Main Content Container -->
+    <FrameLayout
+        android:id="@+id/mainContentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <!-- Full-screen background (can be an ImageView or LottieAnimationView) -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dashboard_background" />
+
+    <!-- Actual content which respects system insets -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dashboardContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:padding="4dp"
+        android:fitsSystemWindows="true">
 
         <!-- Toolbar with Hamburger Icon -->
         <androidx.appcompat.widget.Toolbar
@@ -77,9 +92,12 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="24dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
 
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView

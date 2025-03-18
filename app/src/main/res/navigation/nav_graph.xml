@@ -60,6 +60,9 @@
         <action
             android:id="@+id/action_gameSelectionFragment_to_gameFragment"
             app:destination="@id/gameFragment" />
+        <action
+            android:id="@+id/action_gameSelectionFragment_to_shakeGameFragment"
+            app:destination="@id/shakeGameFragment" />
     </fragment>
 
     <fragment
@@ -84,6 +87,15 @@
         <action
             android:id="@+id/action_creditsFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/shakeGameFragment"
+        android:name="com.mytestwork2.fragments.ShakeGameFragment"
+        android:label="Shake Game">
+        <action
+            android:id="@+id/action_shakeGameFragment_to_gameSelectionFragment"
+            app:destination="@id/gameSelectionFragment" />
     </fragment>
 
 

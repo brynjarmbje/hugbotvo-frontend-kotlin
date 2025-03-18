@@ -1,111 +1,117 @@
-<androidx.constraintlayout.widget.ConstraintLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/gameContainer"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="0dp">
+    android:clipToPadding="false"
+    android:clipChildren="false">
 
-    <!-- Lottie Animation Background -->
+    <!-- Background that fills the entire screen (goes behind the notch) -->
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/backgroundAnimation"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:lottie_rawRes="@raw/mountain_background"
         app:lottie_loop="true"
         app:lottie_autoPlay="true"
         app:lottie_speed="1.0"
-        android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:scaleType="centerCrop" />
 
-    <!-- Player Info TextView -->
-    <TextView
-        android:id="@+id/playerInfoTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Player: Unknown | Level: 1"
-        android:textSize="20sp"
-        android:textColor="@android:color/black"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="28dp"/>
-
-    <!-- Instruction -->
-    <TextView
-        android:id="@+id/gameInstruction"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Leiðbeiningar..."
-        android:textSize="20sp"
-        android:textColor="@android:color/black"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/playerInfoTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="0dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/audioButtonContainer"
-        style="@style/AdventurousFlashyButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hlusta"
-        android:textSize="28sp"
-        android:textColor="#FFFFFF"
-        android:fontFamily="sans-serif-condensed"
-        app:layout_constraintTop_toBottomOf="@id/gameInstruction"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp" />
-
-    <!-- Options Container -->
-    <LinearLayout
-        android:id="@+id/optionsContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        app:backgroundTint="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/audioButtonContainer"
-        app:layout_constraintBottom_toTopOf="@id/backButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Back Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/backButton"
-        style="@style/AdventurousFlashyButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Til baka"
-        android:stateListAnimator="@null"
-        android:onClick="onButtonClick"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="20dp" />
-
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/loadingAnimation"
+    <!-- Content container that respects system insets -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        app:lottie_autoPlay="false"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/fruit_splash"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:fitsSystemWindows="true"
+        android:padding="0dp">
 
+        <!-- Player Info TextView -->
+        <TextView
+            android:id="@+id/playerInfoTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Player: Unknown | Level: 1"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Instruction -->
+        <TextView
+            android:id="@+id/gameInstruction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leiðbeiningar..."
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/playerInfoTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="0dp"/>
+
+        <!-- Audio Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/audioButtonContainer"
+            style="@style/AdventurousFlashyButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hlusta"
+            android:textSize="28sp"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-condensed"
+            app:layout_constraintTop_toBottomOf="@id/gameInstruction"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <!-- Options Container -->
+        <LinearLayout
+            android:id="@+id/optionsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:backgroundTint="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/audioButtonContainer"
+            app:layout_constraintBottom_toTopOf="@id/backButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Back Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/backButton"
+            style="@style/AdventurousFlashyButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Til baka"
+            android:stateListAnimator="@null"
+            android:onClick="onButtonClick"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Loading Animation (over content) -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/loadingAnimation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/fruit_splash"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

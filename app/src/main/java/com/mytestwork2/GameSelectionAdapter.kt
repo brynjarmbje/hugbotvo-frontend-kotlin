@@ -25,7 +25,11 @@ class GameSelectionAdapter(
     override fun onBindViewHolder(holder: GameOptionViewHolder, position: Int) {
         val option = gameOptions[position]
         // Display game name along with its actual points.
-        holder.gameName.text = "${option.name} - ${option.points} stig"
+        if (option.id < 4) {
+            holder.gameName.text = "${option.name} - ${option.points} stig"
+            } else {
+            holder.gameName.text = option.name
+        }
         holder.itemView.setOnClickListener { onItemClicked(option) }
     }
 
