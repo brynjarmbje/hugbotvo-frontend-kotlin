@@ -8,8 +8,10 @@ import com.mytestwork2.models.GameData
 import com.mytestwork2.models.GameSessionResponse
 import com.mytestwork2.models.LoginRequest
 import com.mytestwork2.models.LoginResponse
+import com.mytestwork2.models.QuestionDataResponse
 import com.mytestwork2.models.SessionUpdateResponse
 import com.mytestwork2.models.SupervisorDashboardResponse
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -19,6 +21,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 interface ApiService {
     @POST("api/auth/login")
@@ -169,4 +172,33 @@ interface ApiService {
         @Path("childId") childId: Long
     ): Map<String, Any>
 
+    /**
+     * Get question data (images and audio) for game options.
+     *
+     * @param adminId The ID of the admin
+     * @param childId The ID of the child
+     * @param correctId The ID of the correct question
+     * @param optionIds List of question option IDs
+     * @return Response containing question data for all options
+     */
+    @GET("api/admins/{adminId}/children/{childId}/games/question-data")
+    suspend fun getQuestionData(
+        @Path("adminId") adminId: Long,
+        @Path("childId") childId: Long,
+        @Query("correctId") correctId: Long,
+        @Query("optionIds") optionId1: Long,
+        @Query("optionIds") optionId2: Long,
+        @Query("optionIds") optionId3: Long
+    ): QuestionDataResponse
+
+    // For images
+    @GET("api/questions/{id}/image")
+    suspend fun getImage(
+        @Path("id") imageId: Long
+    ): ResponseBody
+
+    @GET("api/questions/{id}/audio")
+    suspend fun getAudio(
+        @Path("id") audioId: Long
+    ): ResponseBody
 }
