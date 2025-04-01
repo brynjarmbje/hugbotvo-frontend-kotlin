@@ -9,39 +9,29 @@
 
     <!-- Popup Title -->
     <TextView
-        android:id="@+id/adminPopupTitle"
+        android:id="@+id/popupTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Kennari :)"
+        android:text="Session Details"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center" />
 
-    <!-- Change Password Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/changePasswordButton"
+    <!-- RecyclerView for sessions -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sessionsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Breyta lykilorði"
-        app:cornerRadius="16dp"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="16dp" />
 
-    <!-- Delete Admin Button -->
+    <!-- Close Button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/deleteAdminPopupButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Fjarlægja kennara"
-        app:cornerRadius="16dp"
-        android:layout_marginTop="8dp" />
-
-    <!-- Close Popup Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/closeAdminPopupButton"
+        android:id="@+id/closePopupButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Loka"
         app:cornerRadius="16dp"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="24dp" />
 
 </LinearLayout>
+

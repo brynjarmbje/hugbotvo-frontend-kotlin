@@ -6,6 +6,7 @@ import com.mytestwork2.models.Child
 import com.mytestwork2.models.ChildPointsResponse
 import com.mytestwork2.models.GameData
 import com.mytestwork2.models.GameSessionResponse
+import com.mytestwork2.models.LatestSessionsResponse
 import com.mytestwork2.models.LoginRequest
 import com.mytestwork2.models.LoginResponse
 import com.mytestwork2.models.QuestionDataResponse
@@ -172,25 +173,6 @@ interface ApiService {
         @Path("childId") childId: Long
     ): Map<String, Any>
 
-    /**
-     * Get question data (images and audio) for game options.
-     *
-     * @param adminId The ID of the admin
-     * @param childId The ID of the child
-     * @param correctId The ID of the correct question
-     * @param optionIds List of question option IDs
-     * @return Response containing question data for all options
-     */
-    @GET("api/admins/{adminId}/children/{childId}/games/question-data")
-    suspend fun getQuestionData(
-        @Path("adminId") adminId: Long,
-        @Path("childId") childId: Long,
-        @Query("correctId") correctId: Long,
-        @Query("optionIds") optionId1: Long,
-        @Query("optionIds") optionId2: Long,
-        @Query("optionIds") optionId3: Long
-    ): QuestionDataResponse
-
     // For images
     @GET("api/questions/{id}/image")
     suspend fun getImage(
@@ -201,4 +183,11 @@ interface ApiService {
     suspend fun getAudio(
         @Path("id") audioId: Long
     ): ResponseBody
+
+    @GET("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/latest")
+    suspend fun getLatestSessions(
+        @Path("adminId") adminId: Long,
+        @Path("childId") childId: Long,
+        @Path("gameId") gameId: Int
+    ): LatestSessionsResponse
 }

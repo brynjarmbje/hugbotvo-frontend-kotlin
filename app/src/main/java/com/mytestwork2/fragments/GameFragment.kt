@@ -57,7 +57,6 @@ class GameFragment : Fragment() {
     private val audioDataCache = mutableMapOf<Long, String>()
 
     private lateinit var backButton: Button
-    private lateinit var audioButton: Button
     private lateinit var audioButtonContainer: MaterialButton
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
@@ -219,14 +218,7 @@ class GameFragment : Fragment() {
                     3 -> instructionText.text = "Ýttu á dýrið á rétta staðinn!"
                 }
 
-                // Instead of directly setting up buttons, fetch the question data first
-                val optionIds = gameData?.optionIds?.map { it.toLong() } ?: emptyList()
-                if (optionIds.isNotEmpty() && gameData?.correctId != null) {
-                    fetchQuestionData(gameData!!.correctId.toLong(), optionIds)
-                } else {
-                    // Fallback to the old method if we don't have the data
-                    setupOptionButtons(gameData?.optionIds ?: emptyList())
-                }
+                setupOptionButtons(gameData?.optionIds ?: emptyList())
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load the game: ${e.message}", Toast.LENGTH_LONG).show()
@@ -586,139 +578,7 @@ class GameFragment : Fragment() {
         // Ensure session is ended when fragment is destroyed
         endCurrentSession()
     }
-    private fun fetchQuestionData(correctId: Long, optionIds: List<Long>) {
-        fragmentScope.launch {
-            try {
-                showLoadingAnimation()
 
-                Log.d("GameFragment", "⭐ Preparing to fetch question data")
-                Log.d("GameFragment", "⭐ Parameters: adminId=$adminId, childId=${childId!!.toLong()}, correctId=$correctId")
-                Log.d("GameFragment", "⭐ optionIds: $optionIds")
-
-                // Make sure we have the correct ID and two other IDs
-                val filteredOptionIds = optionIds.filter { it != correctId }
-
-                // Get two wrong options (or use the correct ID as fallback if not enough options)
-                val wrongOption1 = filteredOptionIds.getOrElse(0) { correctId }
-                val wrongOption2 = filteredOptionIds.getOrElse(1) { correctId }
-
-                Log.d("GameFragment", "⭐ Using correctId=$correctId, wrongOption1=$wrongOption1, wrongOption2=$wrongOption2")
-
-                val response = apiService.getQuestionData(
-                    adminId!!,
-                    childId!!.toLong(),
-                    correctId,
-                    correctId,     // First option is the correct one
-                    wrongOption1,  // Second option is a wrong one
-                    wrongOption2   // Third option is a wrong one
-                )
-
-                Log.d("GameFragment", "⭐ API call completed successfully")
-                Log.d("GameFragment", "⭐ Response received with correctId: ${response.correctId}")
-                Log.d("GameFragment", "⭐ Number of questions in response: ${response.questions.size}")
-
-                // Set up the option buttons with the retrieved data
-                setupOptionButtonsWithData(response.questions, correctId)
-
-            } catch (e: Exception) {
-                Log.e("GameFragment", "❌ Error fetching question data: ${e.message}", e)
-
-                if (e is retrofit2.HttpException) {
-                    val errorCode = e.code()
-                    val errorBody = e.response()?.errorBody()?.string()
-                    Log.e("GameFragment", "❌ HTTP Error Code: $errorCode")
-                    Log.e("GameFragment", "❌ Error Response Body: $errorBody")
-                }
-
-                Toast.makeText(requireContext(), "Failed to load question data: ${e.message}", Toast.LENGTH_LONG).show()
-
-                // Fallback to the old method
-                setupOptionButtons(gameData?.optionIds ?: emptyList())
-            } finally {
-                hideLoadingAnimation()
-            }
-        }
-    }
-
-
-
-    private fun setupOptionButtonsWithData(
-        questionsData: Map<String, QuestionData>,
-        correctId: Long
-    ) {
-        // Clear existing buttons and cache
-        optionsContainer.removeAllViews()
-        audioDataCache.clear()
-
-        val screenHeight = resources.displayMetrics.heightPixels
-        val imageSize = (screenHeight * 0.2).toInt()
-        val margin = resources.getDimensionPixelSize(R.dimen.option_margin)
-        val buttonParams = LinearLayout.LayoutParams(imageSize, imageSize).apply {
-            setMargins(margin, margin, margin, margin)
-        }
-
-        // Create a button for each question
-        questionsData.forEach { (idString, questionData) ->
-            val id = idString.toLong()
-
-            // Store audio data in the cache
-            if (!questionData.audioData.isNullOrEmpty()) {
-                audioDataCache[id] = questionData.audioData
-                Log.d("GameFragment", "⭐ Cached audio data for ID: $id")
-            }
-
-            val button = MaterialButton(ContextThemeWrapper(requireContext(), R.style.OptionButtonStyle)).apply {
-                layoutParams = buttonParams
-                text = ""
-                iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-                iconPadding = 0
-                iconTint = null
-
-                // Set a placeholder icon initially
-                icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
-                iconSize = (imageSize * 0.8).toInt()
-
-                // Store the audio data as a tag for later use
-                tag = questionData.audioData
-            }
-
-            // Set up button appearance
-            button.rippleColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.neon_blue))
-            val newElevation = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                16f,
-                resources.displayMetrics
-            )
-            button.elevation = newElevation
-
-            // Load the image from Base64 if available
-            val imageBase64 = questionData.imageData
-            if (imageBase64 != null) {
-                try {
-                    val imageBytes = android.util.Base64.decode(imageBase64, android.util.Base64.DEFAULT)
-                    val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                    button.icon = bitmap.toDrawable(resources)
-                } catch (e: Exception) {
-                    Log.e("GameFragment", "Error decoding image: ${e.message}", e)
-                    button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.paper)
-                }
-            }
-
-            // Add animation
-            val sideSlide = AnimationUtils.loadAnimation(requireContext(), R.anim.side_slide)
-            button.startAnimation(sideSlide)
-
-            // Set click listener
-            button.setOnClickListener {
-                soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-                handleOptionPress(id.toInt(), button)
-                val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
-                button.startAnimation(bounceAnimation)
-            }
-
-            optionsContainer.addView(button)
-        }
-    }
     // For images
     private fun getImageUrl(id: Long): String {
         val url = "${RetrofitClient.baseUrl()}api/questions/$id/image"

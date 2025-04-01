@@ -17,8 +17,10 @@ import com.google.android.material.button.MaterialButton
 import com.mytestwork2.AdminsAdapter
 import com.mytestwork2.ChildrenAdapter
 import com.mytestwork2.R
+import com.mytestwork2.SessionAdapter
 import com.mytestwork2.models.Admin
 import com.mytestwork2.models.Child
+import com.mytestwork2.models.SessionSummary
 import com.mytestwork2.models.SupervisorDashboardResponse
 import com.mytestwork2.network.ApiService
 import com.mytestwork2.network.RetrofitClient
@@ -29,6 +31,8 @@ import org.json.JSONArray
 class SupervisorFragment : Fragment() {
 
     private var adminId: Long = 0
+    private var childId: Long = 0
+    private var gameId: Int = 0
 
     // Header to display school name or dashboard title.
     private lateinit var headerTitle: TextView
@@ -91,7 +95,7 @@ class SupervisorFragment : Fragment() {
                 Log.d("SupervisorFragment", "Dashboard response: $response")
 
                 // Update header text with the school name.
-                headerTitle.text = "${response.schoolName ?: "No school returned"}"
+                headerTitle.text = "${response.schoolName ?: "Enginn skóli fannst"}"
 
                 // Update lists.
                 childrenList = response.children ?: emptyList()
@@ -117,27 +121,27 @@ class SupervisorFragment : Fragment() {
     // --- Prompt Methods for Additional Actions ---
 
     private fun promptAddChild() {
-        val input = EditText(requireContext()).apply { hint = "Enter child name" }
+        val input = EditText(requireContext()).apply { hint = "Skrifaðu nafn barns" }
         AlertDialog.Builder(requireContext())
-            .setTitle("Add Child")
+            .setTitle("Skrá barn")
             .setView(input)
-            .setPositiveButton("Add") { dialog, _ ->
+            .setPositiveButton("Skra") { dialog, _ ->
                 val childName = input.text.toString().trim()
                 if (childName.isNotEmpty()) {
                     lifecycleScope.launch {
                         try {
                             // Call your API to create a child (adjust as needed).
                             val newChild = apiService.createChild(adminId, Child(name = childName))
-                            Toast.makeText(requireContext(), "Child added", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Barn skráð", Toast.LENGTH_SHORT).show()
                             fetchSupervisorDashboard() // Refresh data.
                         } catch (e: Exception) {
-                            Toast.makeText(requireContext(), "Error adding child: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Villa við skráningu barns: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton("Hætta við") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
@@ -146,15 +150,15 @@ class SupervisorFragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
         }
-        val usernameInput = EditText(requireContext()).apply { hint = "Enter admin username" }
-        val passwordInput = EditText(requireContext()).apply { hint = "Enter admin password" }
+        val usernameInput = EditText(requireContext()).apply { hint = "Nafn kennarans" }
+        val passwordInput = EditText(requireContext()).apply { hint = "Lykilorð kennarans" }
         layout.addView(usernameInput)
         layout.addView(passwordInput)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Add Admin")
+            .setTitle("Skrá kennara")
             .setView(layout)
-            .setPositiveButton("Add") { dialog, _ ->
+            .setPositiveButton("Skrá") { dialog, _ ->
                 val username = usernameInput.text.toString().trim()
                 val password = passwordInput.text.toString().trim()
                 if (username.isNotEmpty() && password.isNotEmpty()) {
@@ -162,16 +166,16 @@ class SupervisorFragment : Fragment() {
                         try {
                             // Call your API to create an admin (adjust as needed).
                             val newAdmin = apiService.createAdmin(adminId, Admin(username = username, password = password))
-                            Toast.makeText(requireContext(), "Admin added", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Kennara bætt við", Toast.LENGTH_SHORT).show()
                             fetchSupervisorDashboard() // Refresh data.
                         } catch (e: Exception) {
-                            Toast.makeText(requireContext(), "Error adding admin: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Það mistókst að bæta við kennara: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton("Hætta við") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
@@ -182,17 +186,19 @@ class SupervisorFragment : Fragment() {
         builder.setView(view)
         val dialog = builder.create()
 
+        view.findViewById<TextView>(R.id.adminPopupTitle).text = admin.username
+
         // In your promptAdminPopup(admin: Admin) function:
         view.findViewById<MaterialButton>(R.id.changePasswordButton).setOnClickListener {
             // Create an input field for the new password.
             val passwordInput = EditText(requireContext()).apply {
-                hint = "Enter new password"
+                hint = "Skrifaðu nýtt lykilorð"
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
             AlertDialog.Builder(requireContext())
-                .setTitle("Change Password")
+                .setTitle("Breyta lykilorði")
                 .setView(passwordInput)
-                .setPositiveButton("Change") { dialog, _ ->
+                .setPositiveButton("Breyta") { dialog, _ ->
                     val newPassword = passwordInput.text.toString().trim()
                     if (newPassword.isNotEmpty()) {
                         lifecycleScope.launch {
@@ -200,20 +206,20 @@ class SupervisorFragment : Fragment() {
                                 // Call the API to change password.
                                 val response = apiService.changeAdminPassword(adminId, admin.id!!, newPassword)
                                 if (response.isSuccessful) {
-                                    Toast.makeText(requireContext(), "Password changed successfully", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "Lykilorði breytt", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    Toast.makeText(requireContext(), "Error changing password: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "Villa við breytingu lykilorðs: ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
                             } catch (e: Exception) {
                                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } else {
-                        Toast.makeText(requireContext(), "Password cannot be empty", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Lykilorð má ekki vera tómt", Toast.LENGTH_SHORT).show()
                     }
                     dialog.dismiss()
                 }
-                .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                .setNegativeButton("Hætta við") { dialog, _ -> dialog.dismiss() }
                 .show()
         }
 
@@ -223,13 +229,10 @@ class SupervisorFragment : Fragment() {
         view.findViewById<MaterialButton>(R.id.closeAdminPopupButton).setOnClickListener {
             dialog.dismiss()
         }
-        // Set filler details (if desired).
-        // view.findViewById<TextView>(R.id.adminPopupContent).text = "Filler admin details..."
 
         dialog.show()
     }
 
-    // Pop-up for child details (using child_popup.xml)
     private fun promptChildPopup(child: Child) {
         val builder = AlertDialog.Builder(requireContext())
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.child_popup, null)
@@ -246,27 +249,20 @@ class SupervisorFragment : Fragment() {
             dialog.dismiss()
         }
 
-        // Define the default categories for games (using English keys as returned from backend)
-        val defaultCategories = listOf("Letters", "Numbers", "Locate")
-
-        // Map from English keys to Icelandic names.
-        val categoryMap = mapOf(
-            "Letters" to "Stafir",
-            "Numbers" to "Tölur",
-            "Locate" to "Staðsetning"
-        )
-
+        // Fetch and display child points
         lifecycleScope.launch {
             try {
                 // Call the endpoint that returns a map of category names to points.
                 val pointsMap = apiService.getAllChildPoints(child.id!!)
-
-                // Build a string showing points per category.
+                val defaultCategories = listOf("Letters", "Numbers", "Locate")
+                val categoryMap = mapOf(
+                    "Letters" to "Stafir",
+                    "Numbers" to "Tölur",
+                    "Locate" to "Staðsetning"
+                )
                 val details = StringBuilder("Stig í leikjum:\n")
                 defaultCategories.forEach { category ->
-                    // Convert category name to Icelandic.
                     val icelandicName = categoryMap[category] ?: category
-                    // If the category doesn't exist in the map, default to 0.
                     val points = pointsMap[category] ?: 0
                     details.append("$icelandicName: $points\n")
                 }
@@ -276,9 +272,77 @@ class SupervisorFragment : Fragment() {
                 view.findViewById<TextView>(R.id.childPopupContent).text = "Failed to load details."
             }
         }
+
+        // Set up click listeners for the game buttons:
+        view.findViewById<MaterialButton>(R.id.buttonLetters).setOnClickListener {
+            promptLatestSessionsPopup(child, gameId = 1, gameName = "Stafir")
+        }
+        view.findViewById<MaterialButton>(R.id.buttonNumbers).setOnClickListener {
+            promptLatestSessionsPopup(child, gameId = 2, gameName = "Tölur")
+        }
+        view.findViewById<MaterialButton>(R.id.buttonLocate).setOnClickListener {
+            promptLatestSessionsPopup(child, gameId = 3, gameName = "Staðsetning")
+        }
+
+        // Optionally, if you want to show a default session summary in this popup, you can leave childPopupSessions as is.
+        // Otherwise, you may choose to hide or remove it.
+
         dialog.show()
     }
 
+    private fun promptLatestSessionsPopup(child: Child, gameId: Int, gameName: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.simple_popup, null)
+        builder.setView(view)
+        val dialog = builder.create()
+
+        view.findViewById<TextView>(R.id.popupTitle).text = "Síðustu $gameName leikir"
+        val recyclerView = view.findViewById<RecyclerView>(R.id.sessionsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        view.findViewById<MaterialButton>(R.id.closePopupButton).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        lifecycleScope.launch {
+            try {
+                val response = apiService.getLatestSessions(adminId, child.id!!, gameId)
+                val sessions = response.sessions
+                // Set up the RecyclerView with the sessions
+                recyclerView.adapter = SessionAdapter(sessions)
+            } catch (e: Exception) {
+                Log.e("LatestSessionsPopup", "Error fetching session details: ${e.message}", e)
+                // Optionally, show an error message in a TextView if you prefer.
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun buildSessionDetailsString(sessions: List<SessionSummary>): String {
+        if (sessions.isEmpty()) return "Engir leikir til staðar."
+
+        val builder = StringBuilder()
+        sessions.forEach { session ->
+            // You may customize the details you want to show.
+            builder.append("Stig: ${session.points}\n")
+            builder.append("Rétt svör: ${session.correctAnswers}\n")
+            builder.append("Upphaf: ${session.startTime}\n")
+            builder.append("Lok: ${session.endTime ?: "Í gangi"}\n")
+            builder.append("-------------------\n")
+        }
+        return builder.toString()
+    }
+
+    // Mapping function for gameId to name:
+    private fun getGameName(gameId: Int): String {
+        return when (gameId) {
+            1 -> "Stafir"
+            2 -> "Tölur"
+            3 -> "Staðsetning"
+            else -> "Óþekktur leikur"
+        }
+    }
 
     // Confirmation dialog for deletion (using confirm_delete_popup.xml)
     private fun showDeleteConfirmationDialog(type: String, targetId: Long) {
