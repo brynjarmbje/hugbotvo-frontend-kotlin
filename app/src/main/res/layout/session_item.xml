@@ -30,6 +30,14 @@
             android:text="Réttar svör: 8/10"
             android:layout_marginTop="4dp"/>
 
+        <!-- Accuracy -->
+        <TextView
+            android:id="@+id/textAccuracy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nákvæmni: 80%"
+            android:layout_marginTop="4dp"/>
+
         <!-- Start and End times -->
         <TextView
             android:id="@+id/textStartTime"

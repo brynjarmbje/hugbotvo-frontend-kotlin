@@ -16,6 +16,7 @@ class SessionAdapter(private val sessions: List<SessionSummary>) :
     inner class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textPoints: TextView = itemView.findViewById(R.id.textPoints)
         val textCorrectAnswers: TextView = itemView.findViewById(R.id.textCorrectAnswers)
+        val textAccuracy: TextView = itemView.findViewById(R.id.textAccuracy)
         val textStartTime: TextView = itemView.findViewById(R.id.textStartTime)
         val textEndTime: TextView = itemView.findViewById(R.id.textEndTime)
     }
@@ -30,6 +31,7 @@ class SessionAdapter(private val sessions: List<SessionSummary>) :
         // Assuming you have a helper function to get game name
         holder.textPoints.text = "Stig: ${session.points}"
         holder.textCorrectAnswers.text = "Rétt svör: ${session.correctAnswers}"
+        holder.textAccuracy.text = "Nákvæmni: ${session.accuracy.toInt()}%"
         holder.textStartTime.text = "Upphaf: ${formatDateTime(session.startTime)}"
         holder.textEndTime.text = "Lok: ${formatDateTime(session.endTime) ?: "Í gangi"}"
     }
