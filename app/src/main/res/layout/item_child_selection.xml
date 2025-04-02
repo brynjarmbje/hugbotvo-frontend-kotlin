@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/childName"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/childCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:textSize="16sp" />
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/default_child_background">
+
+    <TextView
+        android:id="@+id/childName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black" />
+
+</com.google.android.material.card.MaterialCardView>

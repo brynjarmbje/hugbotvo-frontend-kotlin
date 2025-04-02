@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.mytestwork2.models.Child
 
@@ -31,14 +32,22 @@ class ChildSelectionAdapter(
         val isSelected = selectedChildren.contains(child.id)
         Log.d("ChildSelectionAdapter", "Child id: ${child.id} selected: $isSelected")
 
+        // Cast the root view to MaterialCardView.
+        val cardView = holder.itemView as com.google.android.material.card.MaterialCardView
+        val context = holder.itemView.context
         if (isSelected) {
-            holder.itemView.setBackgroundResource(android.R.color.holo_blue_light)
+            // Set selected background color or stroke.
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.selected_child_background))
+            cardView.strokeWidth = 4 // For example, 4px stroke for selected state.
+            cardView.strokeColor = ContextCompat.getColor(context, R.color.selected_child_background)
         } else {
-            holder.itemView.setBackgroundResource(android.R.color.transparent)
+            // Reset to default background.
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.default_child_background))
+            cardView.strokeWidth = 0
         }
+
         holder.itemView.setOnClickListener { child.id?.let { onItemClick(it) } }
     }
-
 
     override fun getItemCount(): Int = children.size
 }
