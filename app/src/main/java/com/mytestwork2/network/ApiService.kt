@@ -31,16 +31,6 @@ interface ApiService {
     @GET("api/admins/{adminId}/children/all")
     suspend fun getAllChildren(@Path("adminId") adminId: Long): List<Child>
 
-    // get children in group
-    // /api/admins/{adminId}/children
-    @GET("api/admins/{adminId}/children")
-    suspend fun getChildrenInGroup(@Path("adminId") adminId: Long): List<Child>
-
-    // delete
-    // /api/admins/{adminId}/children/{childId}
-    @DELETE("api/admins/{adminId}/children/{childId}")
-    suspend fun deleteChildFromGroup(@Path("adminId") adminId: Long, @Path("childId") childId: Long)
-
     // add
     // /api/admins/{adminId}/children
     @POST("api/admins/{adminId}/children")
@@ -53,11 +43,6 @@ interface ApiService {
     // New endpoint: Get unmanaged children for Admin Group
     @GET("api/admins/{adminId}/children/unmanaged")
     suspend fun getUnmanagedChildren(@Path("adminId") adminId: Long): List<Child>
-
-    // New endpoint: Get all children (managed) in Admin Group
-    @GET("api/admins/{adminId}/children/managed")
-    suspend fun getAllChildrenInAdminGroup(@Path("adminId") adminId: Long): List<Child>
-
 
     @GET("api/admins/{adminId}")
     suspend fun getAdminDashboard(@Path("adminId") adminId: Long): AdminDashboardResponse
@@ -95,10 +80,6 @@ interface ApiService {
         @Query("id") targetAdminId: Long,
         @Query("newPassword") newPassword: String
     ): retrofit2.Response<String>
-
-    // Optional: Get school name by admin ID
-    @GET("api/admins/{adminId}/school")
-    suspend fun getSchoolName(@Path("adminId") adminId: Long): Map<String, String>
 
     @POST("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/start")
     suspend fun startSession(
@@ -145,44 +126,6 @@ interface ApiService {
         @Path("childId") childId: Long
     ): Map<String, Int>
 
-    /**
-     * Add points to a child for a specific game type.
-     */
-    @POST("api/points/children/{childId}/games/{gameType}/add")
-    suspend fun addPointsToChild(
-        @Path("childId") childId: Long,
-        @Path("gameType") gameType: Int,
-        @Query("points") points: Int
-    ): Map<String, Any>
-
-    /**
-     * Set points for a child for a specific game type (overwrite previous value).
-     */
-    @PUT("api/points/children/{childId}/games/{gameType}")
-    suspend fun setChildPoints(
-        @Path("childId") childId: Long,
-        @Path("gameType") gameType: Int,
-        @Query("points") points: Int
-    ): Map<String, Any>
-
-    /**
-     * Get total points for a child across all categories.
-     */
-    @GET("api/points/children/{childId}/total")
-    suspend fun getTotalChildPoints(
-        @Path("childId") childId: Long
-    ): Map<String, Any>
-
-    // For images
-    @GET("api/questions/{id}/image")
-    suspend fun getImage(
-        @Path("id") imageId: Long
-    ): ResponseBody
-
-    @GET("api/questions/{id}/audio")
-    suspend fun getAudio(
-        @Path("id") audioId: Long
-    ): ResponseBody
 
     @GET("api/admins/{adminId}/children/{childId}/games/{gameId}/sessions/latest")
     suspend fun getLatestSessions(
