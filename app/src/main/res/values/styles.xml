@@ -49,9 +49,13 @@
         <item name="cornerSize">16dp</item>
         <item name="android:fillColor">@android:color/white</item>
     </style>
-
-
-
-
+    <style name="TransparentCardViewStyle" parent="Widget.MaterialComponents.CardView">
+        <!-- Force a transparent background and no stroke -->
+        <item name="cardBackgroundColor">@android:color/transparent</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="strokeColor">@android:color/transparent</item>
+        <!-- Retain any elevation if needed -->
+        <item name="cardElevation">0dp</item>
+    </style>
 
 </resources>
