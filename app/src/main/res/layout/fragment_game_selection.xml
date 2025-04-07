@@ -21,61 +21,59 @@
         android:padding="16dp"
         android:fitsSystemWindows="true">
 
-    <!-- Player Header: shows player name and total points -->
-    <TextView
-        android:id="@+id/playerHeader"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:text="PlayerName! Þú ert með 0 stig! Hvað viltu læra!?"
-        android:textSize="20sp"
-        android:textColor="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"/>
+        <!-- Player Header: Greeting message (two lines) -->
+        <TextView
+            android:id="@+id/playerHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Student! Þú ert með 0 stig!\nHvað viltu læra!?"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
 
-    <!-- Header: "Veldu leik" -->
-    <TextView
-        android:id="@+id/selectionHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Veldu leik"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/playerHeader"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"/>
+        <!-- Header: "Veldu leik" -->
+        <TextView
+            android:id="@+id/selectionHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Veldu leik"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/playerHeader"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
 
-    <!-- Full-width RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gameRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/selectionHeader"
-        app:layout_constraintBottom_toTopOf="@+id/backButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:clipToPadding="false"
-        android:padding="8dp"/>
+        <!-- RecyclerView for Game Options -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/gameRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:padding="8dp"
+            app:layout_constraintTop_toBottomOf="@id/selectionHeader"
+            app:layout_constraintBottom_toTopOf="@id/backButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"/>
 
-    <!-- Back Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/backButton"
-        style="@style/CommonButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Til baka"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="64dp" />
-
+        <!-- Back Button (Anchored at the Bottom) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/backButton"
+            style="@style/CommonButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Til baka"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="24dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

@@ -13,91 +13,92 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <!-- Full-screen background (can be an ImageView or LottieAnimationView) -->
-    <ImageView
-        android:id="@+id/backgroundImage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/dashboard_background" />
+        <!-- Full-screen background (ImageView or LottieAnimationView) -->
+        <ImageView
+            android:id="@+id/backgroundImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/dashboard_background" />
 
-    <!-- Actual content which respects system insets -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/dashboardContent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="4dp"
-        android:fitsSystemWindows="true">
+        <!-- Actual content that respects system insets -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/dashboardContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:fitsSystemWindows="true">
 
-        <!-- Toolbar with Hamburger Icon -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="0dp"
-            android:layout_height="?attr/actionBarSize"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+            <!-- Toolbar with Hamburger Icon -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="0dp"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
 
-        <!-- School Name -->
-        <TextView
-            android:id="@+id/schoolText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Skóli: …"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp" />
+            <!-- School Name -->
+            <TextView
+                android:id="@+id/schoolText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Skóli: …"
+                android:textSize="24sp"
+                android:textColor="@android:color/white"
+                app:layout_constraintTop_toBottomOf="@id/toolbar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:gravity="center" />
 
-        <!-- Instructions -->
-        <TextView
-            android:id="@+id/instructionsText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Veldu nemanda til að spila leik!"
-            android:textSize="16sp"
-            android:textColor="@android:color/white"
-            app:layout_constraintTop_toBottomOf="@id/schoolText"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="24dp"
-            />
+            <!-- Instructions -->
+            <TextView
+                android:id="@+id/instructionsText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Veldu nemanda til að spila leik!"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                app:layout_constraintTop_toBottomOf="@id/schoolText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center" />
 
-        <!-- RecyclerView for Managed Children -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/childrenRecyclerView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:clipToPadding="false"
-            android:padding="8dp"
-            app:layout_constraintTop_toBottomOf="@id/schoolText"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/changeChildButton"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
+            <!-- RecyclerView for Managed Children (Scrollable) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/childrenRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:clipToPadding="false"
+                android:padding="8dp"
+                app:layout_constraintTop_toBottomOf="@id/instructionsText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/changeChildButton"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"/>
 
-        <!-- Change Group Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/changeChildButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Breyta hóp"
-            android:textSize="16sp"
-            app:cornerRadius="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="24dp"
-            android:layout_marginLeft="24dp"
-            android:layout_marginRight="24dp"/>
+            <!-- Change Group Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/changeChildButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Breyta hóp"
+                android:textSize="16sp"
+                app:cornerRadius="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="24dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
@@ -113,6 +114,7 @@
         app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
+
 
 
 
