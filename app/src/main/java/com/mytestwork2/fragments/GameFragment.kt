@@ -301,7 +301,6 @@ class GameFragment : Fragment() {
             button.startAnimation(sideSlide)
 
             button.setOnClickListener {
-                soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
                 handleOptionPress(id, button)
                 val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
                 button.startAnimation(bounceAnimation)
@@ -341,6 +340,7 @@ class GameFragment : Fragment() {
 
         // If the user presses the dialog button:
         dialogButton.setOnClickListener {
+            soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             dialog.dismiss()
         }
 
@@ -356,7 +356,6 @@ class GameFragment : Fragment() {
     }
 
     private fun handleOptionPress(id: Int, view: View) {
-        playLetterAudio(id)
         selectedOption = id
         if (gameData == null || sessionId == null) return
 
