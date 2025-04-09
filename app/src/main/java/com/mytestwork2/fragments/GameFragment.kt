@@ -72,10 +72,12 @@ class GameFragment : Fragment() {
     private var buttonClickSoundId: Int = 0
 
     private var selectedOption: Int? = null
+    private var imagesToLoad: Int = 0
 
     // Using viewLifecycleOwner.lifecycleScope for coroutine work
     private val fragmentScope get() = viewLifecycleOwner.lifecycleScope
     private lateinit var loadingAnimation: LottieAnimationView
+    private lateinit var dimOverlay: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +98,7 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loadingAnimation = view.findViewById(R.id.loadingAnimation)
+        dimOverlay = view.findViewById(R.id.dimOverlay)
 
         // Initialize views
         instructionText = view.findViewById(R.id.gameInstruction)
@@ -154,6 +157,7 @@ class GameFragment : Fragment() {
     }
 
     private fun showLoadingAnimation() {
+        dimOverlay.visibility = View.VISIBLE
         loadingAnimation.visibility = View.VISIBLE
         loadingAnimation.playAnimation()
     }
@@ -161,6 +165,7 @@ class GameFragment : Fragment() {
     private fun hideLoadingAnimation() {
         loadingAnimation.cancelAnimation()
         loadingAnimation.visibility = View.GONE
+        dimOverlay.visibility = View.GONE
     }
 
     private fun playBounceAnimation(view: View) {
@@ -222,24 +227,18 @@ class GameFragment : Fragment() {
                 }
 
                 setupOptionButtons(gameData?.optionIds ?: emptyList())
-
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load the game: ${e.message}", Toast.LENGTH_LONG).show()
                 Log.e("GameFragment", "Error fetching game: ${e.message}", e)
-            } finally {
-                // Always hide the animation, even if there's an error.
-                hideLoadingAnimation()
             }
         }
     }
 
     private fun setupOptionButtons(optionIds: List<Int>) {
-        // First, clear any running animations on existing children.
+        // Clear existing views & animations.
         for (i in 0 until optionsContainer.childCount) {
-            val child = optionsContainer.getChildAt(i)
-            child.clearAnimation()
+            optionsContainer.getChildAt(i).clearAnimation()
         }
-        // Now remove all old views.
         optionsContainer.removeAllViews()
         val screenHeight = resources.displayMetrics.heightPixels
         val imageSize = (screenHeight * 0.2).toInt()  // 20% of screen width
@@ -248,55 +247,53 @@ class GameFragment : Fragment() {
             setMargins(margin, margin, margin, margin)
         }
 
+        // Set the counter.
+        imagesToLoad = optionIds.size
+
         optionIds.forEach { id ->
-            // Create a MaterialButton using a themed context
             val button = MaterialButton(ContextThemeWrapper(requireContext(), R.style.OptionButtonStyle)).apply {
                 layoutParams = buttonParams
-                text = ""  // We only show the image as an icon
-                iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START // With no text, the icon will be centered.
+                text = ""
+                iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
                 iconPadding = 0
-                iconTint = null  // Avoid tinting the loaded image
-                // Set a placeholder icon (same as your previous placeholder)
+                iconTint = null
                 icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
                 iconSize = (imageSize * 0.8).toInt()
             }
 
+            // Remove any hard-coded ripple if needed:
+            // button.rippleColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.neon_blue))
             val newElevation = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                16f,  // adjust this value as needed
+                16f,
                 resources.displayMetrics
             )
             button.elevation = newElevation
 
-
-            // Build the image URL as before.
             val imageUrl = getImageUrl(id.toLong())
-            // Create a Target and assign it to a variable so it's not garbage collected.
             val target = object : com.squareup.picasso.Target {
                 override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
                     button.icon = bitmap.toDrawable(resources)
-                    // Optionally clear the tag after loading
                     button.tag = null
+                    decrementImageCounter()  // Decrement counter on successful load.
                 }
-
                 override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
                     button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.paper)
                     button.tag = null
+                    decrementImageCounter()  // Also decrement on failure.
                 }
-
                 override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
                     button.icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
                 }
             }
-            // Store the target as a tag on the button to keep a strong reference.
             button.tag = target
 
             Picasso.get()
                 .load(imageUrl)
                 .resize(imageSize, imageSize)
                 .centerCrop()
-                .error(R.drawable.paper) // Show this drawable on error
-                .placeholder(R.drawable.team) // Show this drawable while loading
+                .error(R.drawable.paper)
+                .placeholder(R.drawable.team)
                 .into(target)
 
             val sideSlide = AnimationUtils.loadAnimation(requireContext(), R.anim.side_slide)
@@ -304,13 +301,17 @@ class GameFragment : Fragment() {
 
             button.setOnClickListener {
                 handleOptionPress(id, button)
-            //    val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
-            //    button.startAnimation(bounceAnimation)
             }
 
             optionsContainer.addView(button)
         }
+    }
 
+    private fun decrementImageCounter() {
+        imagesToLoad--
+        if (imagesToLoad <= 0) {
+            hideLoadingAnimation()
+        }
     }
 
     private fun showCustomToast(message: String) {
