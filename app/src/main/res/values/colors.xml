@@ -16,6 +16,7 @@
     <color name="button_background">#FF6F61</color>
     <color name="hlustaColor">#FFA08A</color>
 
+
     <!-- Transparent Color -->
     <color name="transparentColor">#00000000</color>
     <color name="semi_transparent_white">#FFB6A6</color>
@@ -24,6 +25,7 @@
     <color name="onPrimary">#FFFFFF</color>
     <color name="onBackground">#333333</color>
     <color name="neon_blue">#00FFFF</color>
+    <color name="neon_red">#FF3131</color>
     <color name="gold">#FFD700</color>
     <color name="button_background_2">#824BD1</color>
     <color name="button_background_pressed">#3E139E</color>

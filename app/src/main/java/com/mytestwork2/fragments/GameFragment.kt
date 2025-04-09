@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
@@ -246,7 +247,7 @@ class GameFragment : Fragment() {
         }
 
         optionIds.forEach { id ->
-            // Create a MaterialButton using a themed context with your custom style.
+            // Create a MaterialButton using a themed context
             val button = MaterialButton(ContextThemeWrapper(requireContext(), R.style.OptionButtonStyle)).apply {
                 layoutParams = buttonParams
                 text = ""  // We only show the image as an icon
@@ -258,7 +259,6 @@ class GameFragment : Fragment() {
                 iconSize = (imageSize * 0.8).toInt()
             }
 
-            button.rippleColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.neon_blue))
             val newElevation = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 16f,  // adjust this value as needed
@@ -302,8 +302,8 @@ class GameFragment : Fragment() {
 
             button.setOnClickListener {
                 handleOptionPress(id, button)
-                val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
-                button.startAnimation(bounceAnimation)
+            //    val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
+            //    button.startAnimation(bounceAnimation)
             }
 
             optionsContainer.addView(button)
@@ -361,6 +361,39 @@ class GameFragment : Fragment() {
 
         val isCorrect = id == gameData!!.correctId
 
+        if (isCorrect) {
+            // Correct answer: vertical bounce with blue blink.
+            val correctAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.vertical_bounce)
+            val blueColor = ContextCompat.getColor(requireContext(), R.color.neon_blue)
+            view.backgroundTintList = ColorStateList.valueOf(blueColor)
+            view.startAnimation(correctAnim)
+        } else {
+            // Incorrect answer: set red tint and perform horizontal shake.
+            if (view is MaterialButton) {
+                val redColor = ContextCompat.getColor(requireContext(), R.color.neon_red)
+                view.backgroundTintList = ColorStateList.valueOf(redColor)
+            }
+
+            // Load the horizontal shake animation. (Ensure your animation file uses a meaningful range.)
+            val shakeAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.horizontal_bounce)
+            shakeAnim.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) { /* No change here */ }
+                override fun onAnimationRepeat(animation: Animation?) { }
+                override fun onAnimationEnd(animation: Animation?) {
+                    // Reset the tint after a short delay so the red remains visible during the shake.
+                    view.postDelayed({
+                        if (view is MaterialButton) {
+                            // Reset to default color; if your button style is white, set white, or another default.
+                            val defaultColor = ContextCompat.getColor(requireContext(), R.color.backgroundColor)
+                            view.backgroundTintList = ColorStateList.valueOf(defaultColor)
+                        }
+                    }, 500)
+                }
+            })
+            view.startAnimation(shakeAnim)
+        }
+
+        // Continue with your backend API call and sound/toast handling.
         fragmentScope.launch {
             try {
                 val gameId = gameType
@@ -369,8 +402,8 @@ class GameFragment : Fragment() {
                     childId!!.toLong(),
                     gameId,
                     sessionId!!,
-                    gameData!!.correctId, // The question's correct ID
-                    id,                  // The option chosen
+                    gameData!!.correctId,
+                    id,
                     gameData!!.correctId,
                     isCorrect
                 )
@@ -386,17 +419,11 @@ class GameFragment : Fragment() {
 
         if (isCorrect) {
             soundPool?.play(correctSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            val anim = ScaleAnimation(
-                1f, 1.2f, 1f, 1.2f,
-                ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
-                ScaleAnimation.RELATIVE_TO_SELF, 0.5f
-            ).apply { duration = 200; fillAfter = true }
-            view.startAnimation(anim)
-            showCustomToast("🌟 Rétt! Þú ert frábær! 🌟") // Custom toast for correct answer
+            showCustomToast("🌟 Rétt! Þú ert frábær! 🌟")
             showCustomAlertDialog("Húrra!", "Þú fannst stafinn! Förum í næsta áfanga! 🚀", "Næsti!")
         } else {
             soundPool?.play(incorrectSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            showCustomToast("🌈 Næstum því! Reyndu aftur! 🌈") // Custom toast for incorrect answer
+            showCustomToast("🌈 Næstum því! Reyndu aftur! 🌈")
         }
     }
 
