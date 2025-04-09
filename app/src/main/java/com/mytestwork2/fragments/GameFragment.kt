@@ -10,16 +10,22 @@ import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.media.SoundPool
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.ScaleAnimation
+import android.view.animation.TranslateAnimation
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -254,9 +260,11 @@ class GameFragment : Fragment() {
             val button = MaterialButton(ContextThemeWrapper(requireContext(), R.style.OptionButtonStyle)).apply {
                 layoutParams = buttonParams
                 text = ""
+                // Center the icon.
                 iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+                gravity = Gravity.CENTER
                 iconPadding = 0
-                iconTint = null
+                iconTint = null  // ensures the original icon colors are used
                 icon = ContextCompat.getDrawable(requireContext(), R.drawable.team)
                 iconSize = (imageSize * 0.8).toInt()
             }
@@ -326,35 +334,52 @@ class GameFragment : Fragment() {
         toast.show()
     }
 
-    private fun showCustomAlertDialog(title: String, message: String, buttonText: String) {
+    private fun showCustomAlertDialog(
+        title: String,
+        message: String,
+        buttonText: String,
+        correctAnswerDrawable: Drawable? = null
+    ) {
         val dialogView = layoutInflater.inflate(R.layout.custom_dialog, null)
         val dialogTitle = dialogView.findViewById<TextView>(R.id.dialog_title)
         val dialogMessage = dialogView.findViewById<TextView>(R.id.dialog_message)
         val dialogButton = dialogView.findViewById<Button>(R.id.dialog_button)
+        val correctAnswerImage = dialogView.findViewById<ImageView>(R.id.correctAnswerImage)
 
         dialogTitle.text = title
         dialogMessage.text = message
         dialogButton.text = buttonText
 
+        // Show the correct answer image if provided.
+        if (correctAnswerDrawable != null) {
+            correctAnswerImage.setImageDrawable(correctAnswerDrawable)
+            correctAnswerImage.visibility = View.VISIBLE
+        } else {
+            correctAnswerImage.visibility = View.GONE
+        }
+
+        // Optionally add a pulse animation to the button
+        val pulseAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_animation)
+        dialogButton.startAnimation(pulseAnimation)
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
-            .setCancelable(true) // or false if you want to force them to tap Næsti
+            .setCancelable(true)
             .create()
 
-        // If the user presses the dialog button:
         dialogButton.setOnClickListener {
+            val bounceAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.bounce_animation)
+            dialogButton.startAnimation(bounceAnimation)
             soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             dialog.dismiss()
         }
 
-        // If the user taps outside or presses back to dismiss the dialog:
+        // Combine necessary actions in one dismiss listener.
         dialog.setOnDismissListener {
-            // Always fetch the next question once the dialog goes away.
             selectedOption = null
             showLoadingAnimation()
             fetchGame()
         }
-
         dialog.show()
     }
 
@@ -365,11 +390,33 @@ class GameFragment : Fragment() {
         val isCorrect = id == gameData!!.correctId
 
         if (isCorrect) {
-            // Correct answer: vertical bounce with blue blink.
-            val correctAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.vertical_bounce)
+            // Capture the drawable from the button BEFORE starting the animation.
+            val correctDrawable = if (view is MaterialButton && view.icon != null) {
+                view.icon.constantState?.newDrawable()?.mutate()
+            } else null
+
+            // Then apply the blue tint.
             val blueColor = ContextCompat.getColor(requireContext(), R.color.neon_blue)
-            view.backgroundTintList = ColorStateList.valueOf(blueColor)
+            if (view is MaterialButton) {
+                view.backgroundTintList = ColorStateList.valueOf(blueColor)
+            }
+
+            // Start the vertical bounce animation.
+            val correctAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.vertical_bounce)
             view.startAnimation(correctAnim)
+
+            // Play sounds, disable the button, etc.
+            soundPool?.play(correctSoundIdDing, 1.0f, 1.0f, 0, 0, 1.0f)
+            soundPool?.play(correctSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
+            showCustomToast("🌟 Rétt! Þú ert frábær! 🌟")
+
+            // Show the dialog with the captured drawable.
+            showCustomAlertDialog(
+                "Húrra!",
+                "Þú fannst stafinn! Förum í næstu spurningu! 🚀",
+                "Næsta!",
+                correctAnswerDrawable = correctDrawable
+            )
         } else {
             // Incorrect answer: set red tint and perform horizontal shake.
             if (view is MaterialButton) {
@@ -377,16 +424,13 @@ class GameFragment : Fragment() {
                 view.backgroundTintList = ColorStateList.valueOf(redColor)
             }
 
-            // Load the horizontal shake animation. (Ensure your animation file uses a meaningful range.)
             val shakeAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.horizontal_bounce)
             shakeAnim.setAnimationListener(object : Animation.AnimationListener {
-                override fun onAnimationStart(animation: Animation?) { /* No change here */ }
+                override fun onAnimationStart(animation: Animation?) { }
                 override fun onAnimationRepeat(animation: Animation?) { }
                 override fun onAnimationEnd(animation: Animation?) {
-                    // Reset the tint after a short delay so the red remains visible during the shake.
                     view.postDelayed({
                         if (view is MaterialButton) {
-                            // Reset to default color; if your button style is white, set white, or another default.
                             val defaultColor = ContextCompat.getColor(requireContext(), R.color.neon_blue)
                             view.backgroundTintList = ColorStateList.valueOf(defaultColor)
                         }
@@ -394,9 +438,11 @@ class GameFragment : Fragment() {
                 }
             })
             view.startAnimation(shakeAnim)
+            soundPool?.play(incorrectSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
+            showCustomToast("🌈 Næstum því! Reyndu aftur! 🌈")
         }
 
-        // Continue with your backend API call and sound/toast handling.
+        // Process the backend answer recording.
         fragmentScope.launch {
             try {
                 val gameId = gameType
@@ -418,16 +464,6 @@ class GameFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("GameFragment", "Error recording answer: ${e.message}", e)
             }
-        }
-
-        if (isCorrect) {
-            soundPool?.play(correctSoundIdDing, 1.0f, 1.0f, 0, 0, 1.0f)
-            soundPool?.play(correctSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            showCustomToast("🌟 Rétt! Þú ert frábær! 🌟")
-            showCustomAlertDialog("Húrra!", "Þú fannst stafinn! Förum í næsta áfanga! 🚀", "Næsti!")
-        } else {
-            soundPool?.play(incorrectSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            showCustomToast("🌈 Næstum því! Reyndu aftur! 🌈")
         }
     }
 
