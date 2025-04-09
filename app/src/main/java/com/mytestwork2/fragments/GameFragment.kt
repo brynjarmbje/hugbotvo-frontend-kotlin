@@ -67,6 +67,7 @@ class GameFragment : Fragment() {
     private var questionMediaPlayer: MediaPlayer? = null // Add this variable
     private var soundPool: SoundPool? = null
     private var correctSoundId: Int = 0
+    private var correctSoundIdDing: Int = 0
     private var incorrectSoundId: Int = 0
     private var buttonClickSoundId: Int = 0
 
@@ -106,6 +107,7 @@ class GameFragment : Fragment() {
         // Initialize SoundPool for sound effects
         soundPool = SoundPool.Builder().setMaxStreams(5).build()
         correctSoundId = soundPool?.load(requireContext(), R.raw.correct_answer, 1) ?: 0
+        correctSoundIdDing = soundPool?.load(requireContext(), R.raw.correct_ding, 1) ?: 0
         incorrectSoundId = soundPool?.load(requireContext(), R.raw.incorrect_answer, 1) ?: 0
         buttonClickSoundId = soundPool?.load(requireContext(), R.raw.button_click, 1) ?: 0
 
@@ -418,6 +420,7 @@ class GameFragment : Fragment() {
         }
 
         if (isCorrect) {
+            soundPool?.play(correctSoundIdDing, 1.0f, 1.0f, 0, 0, 1.0f)
             soundPool?.play(correctSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
             showCustomToast("🌟 Rétt! Þú ert frábær! 🌟")
             showCustomAlertDialog("Húrra!", "Þú fannst stafinn! Förum í næsta áfanga! 🚀", "Næsti!")
