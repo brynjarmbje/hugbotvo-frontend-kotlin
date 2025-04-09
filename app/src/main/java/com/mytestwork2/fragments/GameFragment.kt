@@ -370,7 +370,7 @@ class GameFragment : Fragment() {
         } else {
             // Incorrect answer: set red tint and perform horizontal shake.
             if (view is MaterialButton) {
-                val redColor = ContextCompat.getColor(requireContext(), R.color.neon_red)
+                val redColor = ContextCompat.getColor(requireContext(), R.color.button_background)
                 view.backgroundTintList = ColorStateList.valueOf(redColor)
             }
 
@@ -384,7 +384,7 @@ class GameFragment : Fragment() {
                     view.postDelayed({
                         if (view is MaterialButton) {
                             // Reset to default color; if your button style is white, set white, or another default.
-                            val defaultColor = ContextCompat.getColor(requireContext(), R.color.backgroundColor)
+                            val defaultColor = ContextCompat.getColor(requireContext(), R.color.neon_blue)
                             view.backgroundTintList = ColorStateList.valueOf(defaultColor)
                         }
                     }, 500)
