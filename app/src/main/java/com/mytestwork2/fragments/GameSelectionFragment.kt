@@ -78,12 +78,10 @@ class GameSelectionFragment : Fragment() {
 
                 // Loop over each game type to fetch the child's points.
                 for (gameType in gameTypes) {
-                    // Call the endpoint that returns points for the child in a specific game type.
                     val response = apiService.getChildPointsByGameType(childId!!.toLong(), gameType)
                     val points = response.points
                     totalPoints += points
 
-                    // Map gameType to a display name (adjust as needed)
                     val gameName = when (gameType) {
                         1 -> "Stafir"
                         2 -> "Tölur"
@@ -92,17 +90,19 @@ class GameSelectionFragment : Fragment() {
                     }
                     availableGames.add(GameOption(id = gameType, name = gameName, points = points))
                 }
-                // After adding the existing game types, add the new Shake Challenge.
-                availableGames.add(GameOption(id = 4, name = "Hrista!"))
+                // Decide if Shake game is unlocked (for example, require at least 50 total points).
+                val shakeEnabled = totalPoints >= 50
+                availableGames.add(GameOption(id = 4, name = "Hrista!", points = 0, enabled = shakeEnabled))
 
-                // Update the header with the child's name and total points.
                 playerHeader.text = "${childName ?: "Child $childId"}! Þú ert með $totalPoints stig! Hvað viltu læra!?"
 
-                // Set up RecyclerView adapter using the updated availableGames list.
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = GameSelectionAdapter(availableGames) { selectedGame ->
-                    if (selectedGame.id == 4) {
-                        // Navigate to the ShakeGameFragment for the Shake Challenge.
+                    if (!selectedGame.enabled) {
+                        // If the Shake game is disabled, show a toast explaining.
+                        Toast.makeText(requireContext(), "Hrista leikurinn er ekki opnaður enn – spilaðu aðrar leiki fyrst!", Toast.LENGTH_SHORT).show()
+                    } else if (selectedGame.id == 4) {
+                        // Navigate to the ShakeGameFragment.
                         val bundle = Bundle().apply {
                             putLong("adminId", adminId!!)
                             putString("childId", childId)
@@ -110,7 +110,6 @@ class GameSelectionFragment : Fragment() {
                         }
                         findNavController().navigate(R.id.action_gameSelectionFragment_to_shakeGameFragment, bundle)
                     } else {
-                        // Navigate to the regular GameFragment for other game types.
                         val bundle = Bundle().apply {
                             putLong("adminId", adminId!!)
                             putString("childId", childId)
@@ -120,7 +119,6 @@ class GameSelectionFragment : Fragment() {
                         findNavController().navigate(R.id.action_gameSelectionFragment_to_gameFragment, bundle)
                     }
                 }
-
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Error loading child points: ${e.message}", Toast.LENGTH_LONG).show()
                 Log.e("GameSelectionFragment", "Error fetching child points", e)
