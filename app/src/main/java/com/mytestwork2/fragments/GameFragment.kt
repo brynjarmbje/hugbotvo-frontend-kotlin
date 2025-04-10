@@ -116,8 +116,8 @@ class GameFragment : Fragment() {
         incorrectSoundId = soundPool?.load(requireContext(), R.raw.incorrect_answer, 1) ?: 0
         buttonClickSoundId = soundPool?.load(requireContext(), R.raw.button_click, 1) ?: 0
 
-        // Play background music
-        playBackgroundMusic()
+        audioManager = GameAudioManager(requireContext())
+        audioManager.initBackgroundMusic(R.raw.background_music)
 
         // Set click listeners
         backButton.setOnClickListener {
