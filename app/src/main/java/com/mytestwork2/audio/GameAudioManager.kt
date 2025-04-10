@@ -16,8 +16,8 @@ class GameAudioManager(private val context: Context) {
 
     companion object {
         private const val TAG = "GameAudioManager"
-        private const val NORMAL_VOLUME = 0.7f
-        private const val DUCKING_VOLUME = 0.5f
+        private const val NORMAL_VOLUME = 0.3f
+        private const val DUCKING_VOLUME = 0.1f
         private const val QUESTION_VOLUME = 0.9f
     }
 
