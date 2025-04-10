@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp">
 
-        <!-- Background Image or Gradient will be set programmatically -->
+        <!-- Background Image or Gradient -->
         <ImageView
             android:id="@+id/gameBackground"
             android:layout_width="match_parent"
@@ -24,18 +24,39 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#66000000"/>
+            android:background="#66000000" />
 
-        <!-- Game Title -->
-        <TextView
-            android:id="@+id/gameTitle"
+        <!-- Vertical container for game name and points -->
+        <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Game Name"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:gravity="center"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- Game Name: Center aligned -->
+            <TextView
+                android:id="@+id/gameNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Game Name"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:gravity="center" />
+
+            <!-- Game Points: Centered and below game name, using a smaller text size -->
+            <TextView
+                android:id="@+id/gamePointsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 stig"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
     </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -91,7 +91,7 @@ class GameSelectionFragment : Fragment() {
                     availableGames.add(GameOption(id = gameType, name = gameName, points = points))
                 }
                 // Decide if Shake game is unlocked (for example, require at least 50 total points).
-                val shakeEnabled = totalPoints >= 50
+                val shakeEnabled = totalPoints >= 20
                 availableGames.add(GameOption(id = 4, name = "Hrista!", points = 0, enabled = shakeEnabled))
 
                 playerHeader.text = "${childName ?: "Child $childId"}! Þú ert með $totalPoints stig! Hvað viltu læra!?"
@@ -100,7 +100,7 @@ class GameSelectionFragment : Fragment() {
                 recyclerView.adapter = GameSelectionAdapter(availableGames) { selectedGame ->
                     if (!selectedGame.enabled) {
                         // If the Shake game is disabled, show a toast explaining.
-                        Toast.makeText(requireContext(), "Hrista leikurinn er ekki opnaður enn – spilaðu aðrar leiki fyrst!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Hrista leikurinn er ekki virkjaður – Náðu 20 stigum fyrst!", Toast.LENGTH_SHORT).show()
                     } else if (selectedGame.id == 4) {
                         // Navigate to the ShakeGameFragment.
                         val bundle = Bundle().apply {

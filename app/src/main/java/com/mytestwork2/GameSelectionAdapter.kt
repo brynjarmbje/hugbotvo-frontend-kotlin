@@ -1,5 +1,6 @@
 package com.mytestwork2
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,8 @@ class GameSelectionAdapter(
 ) : RecyclerView.Adapter<GameSelectionAdapter.GameOptionViewHolder>() {
 
     inner class GameOptionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val gameTitle: TextView = itemView.findViewById(R.id.gameTitle)
+        val gameNameTextView: TextView = itemView.findViewById(R.id.gameNameTextView)
+        val gamePointsTextView: TextView = itemView.findViewById(R.id.gamePointsTextView)
         val gameBackground: ImageView = itemView.findViewById(R.id.gameBackground)
         val gameCard: MaterialCardView = itemView.findViewById(R.id.gameCard)
     }
@@ -32,21 +34,27 @@ class GameSelectionAdapter(
         val option = gameOptions[position]
         val context = holder.itemView.context
 
-        // If game id is less than 4, show points; otherwise, just show the game name.
+        // For games with id less than 4, set game name and points.
         if (option.id < 4) {
-            holder.gameTitle.text = "${option.name} - ${option.points} stig"
+            holder.gameNameTextView.text = option.name
+            holder.gamePointsTextView.text = "${option.points} stig"
         } else {
-            holder.gameTitle.text = option.name
-        }
-
-        // For the Shake game (id == 4), adjust visual style based on enabled state.
-        if (option.id == 4 && !option.enabled) {
-            // Indicate that Shake is locked—for example, append a note and gray out the text.
-            holder.gameTitle.text = "${option.name} (Lok lok og lás)"
-            holder.gameTitle.setTextColor(ContextCompat.getColor(context, R.color.gray))
-        } else {
-            // Otherwise, normal text color (using white or any other color defined)
-            holder.gameTitle.setTextColor(ContextCompat.getColor(context, R.color.onPrimary))
+            // For the Shake game (id == 4)
+            holder.gameNameTextView.text = option.name
+            if (!option.enabled) {
+                // If the Shake game is locked, adjust the visuals.
+                holder.gameNameTextView.text = "${option.name}"
+                holder.gameNameTextView.setTextColor(ContextCompat.getColor(context, R.color.gray))
+                holder.gamePointsTextView.text = "Lok lok og lás"  // e.g., display "Locked" or any message
+                holder.gamePointsTextView.setTextColor(ContextCompat.getColor(context, R.color.gray))
+            } else {
+                // If unlocked, use the default color and display the local high score.
+                holder.gameNameTextView.setTextColor(ContextCompat.getColor(context, R.color.onPrimary))
+                holder.gamePointsTextView.setTextColor(ContextCompat.getColor(context, R.color.onPrimary))
+                val prefs = context.getSharedPreferences("shake_game_prefs", Context.MODE_PRIVATE)
+                val highScore = prefs.getFloat("met", 0f)
+                holder.gamePointsTextView.text = "Met: ${"%.2f".format(highScore)} sekúndur"
+            }
         }
 
         // Set the gradient background based on game id.
@@ -61,20 +69,16 @@ class GameSelectionAdapter(
 
         // Click animation (scale in/out).
         holder.gameCard.setOnClickListener {
-            holder.gameCard.animate()
-                .scaleX(0.95f)
-                .scaleY(0.95f)
-                .setDuration(100)
+            holder.gameCard.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
                 .withEndAction {
                     holder.gameCard.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
                     // If the option is disabled, show a toast.
                     if (option.id == 4 && !option.enabled) {
-                        Toast.makeText(context, "Náðu 50 stigum fyrst!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Náðu 20 stigum fyrst!", Toast.LENGTH_SHORT).show()
                     } else {
                         onItemClicked(option)
                     }
-                }
-                .start()
+                }.start()
         }
     }
 
