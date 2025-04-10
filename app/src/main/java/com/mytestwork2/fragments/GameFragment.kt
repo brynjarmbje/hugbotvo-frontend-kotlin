@@ -4,14 +4,11 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+
 import android.media.MediaPlayer
 import android.media.SoundPool
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
@@ -19,11 +16,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.view.animation.ScaleAnimation
-import android.view.animation.TranslateAnimation
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -38,15 +32,13 @@ import com.google.android.material.button.MaterialButton
 import com.squareup.picasso.Picasso
 import com.mytestwork2.R
 import com.mytestwork2.models.GameData
-import com.mytestwork2.models.QuestionData
 import com.mytestwork2.network.ApiService
 import com.mytestwork2.network.RetrofitClient
 import kotlinx.coroutines.launch
-import java.io.File
 import androidx.core.graphics.drawable.toDrawable
+import com.mytestwork2.audio.GameAudioManager
 
 class GameFragment : Fragment() {
-
     private var adminId: Long? = null
     private var childId: String? = null
     private var childName: String? = null
@@ -60,22 +52,21 @@ class GameFragment : Fragment() {
     private var currentLevel: Int = 0
     private var totalGamePoints: Int = 0
 
-    // Add this as a class property at the top of your class
-    private val audioDataCache = mutableMapOf<Long, String>()
-
     private lateinit var backButton: Button
     private lateinit var audioButtonContainer: MaterialButton
     private lateinit var optionsContainer: LinearLayout
     private lateinit var instructionText: TextView
     private lateinit var playerInfoTextView: TextView
+    private lateinit var audioManager: GameAudioManager
 
     private var mediaPlayer: MediaPlayer? = null
-    private var questionMediaPlayer: MediaPlayer? = null // Add this variable
     private var soundPool: SoundPool? = null
     private var correctSoundId: Int = 0
     private var correctSoundIdDing: Int = 0
     private var incorrectSoundId: Int = 0
     private var buttonClickSoundId: Int = 0
+
+    private val NORMAL_VOLUME = 0.7f    // Normal background music volume
 
     private var selectedOption: Int? = null
     private var imagesToLoad: Int = 0
@@ -87,14 +78,19 @@ class GameFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Keep your original parameter initialization
         adminId = arguments?.getLong("adminId")
         childId = arguments?.getString("childId")
         childName = arguments?.getString("childName")
         gameType = arguments?.getInt("gameType") ?: 0
         Log.d("GameFragment", "Parameters: adminId=$adminId, childId=$childId, childName=$childName, gameType=$gameType")
 
-        // Updated to use the new RetrofitClient singleton
+        // Keep your API service initialization
         apiService = RetrofitClient.instance.create(ApiService::class.java)
+
+        // Initialize the new audio manager
+        audioManager = GameAudioManager(requireContext())
     }
 
     override fun onCreateView(
@@ -120,7 +116,7 @@ class GameFragment : Fragment() {
         incorrectSoundId = soundPool?.load(requireContext(), R.raw.incorrect_answer, 1) ?: 0
         buttonClickSoundId = soundPool?.load(requireContext(), R.raw.button_click, 1) ?: 0
 
-        // Play background music at low volume
+        // Play background music
         playBackgroundMusic()
 
         // Set click listeners
@@ -150,9 +146,15 @@ class GameFragment : Fragment() {
             })
             audioButtonContainer.startAnimation(bounceAnimation)
             soundPool?.play(buttonClickSoundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            playCorrectAudio()
-        }
 
+            if (gameData == null) {
+                Log.d("GameFragment", "Cannot play audio yet - game data not loaded")
+                // Show a toast or some feedback
+                Toast.makeText(requireContext(), "Game data is loading...", Toast.LENGTH_SHORT).show()
+            } else {
+                playCorrectAudio()
+            }
+        }
 
         // Add pulse animation to the audiobutton button
         val pulseAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.pulse_animation)
@@ -161,6 +163,12 @@ class GameFragment : Fragment() {
         // Start a new game session when the view is ready
         startGameSession()
     }
+
+    // When you receive audio data from the API, cache it
+    private fun cacheAudioFromResponse(questionId: Long, audioBase64: String) {
+        audioManager.cacheAudio(questionId, audioBase64)
+    }
+
 
     private fun showLoadingAnimation() {
         dimOverlay.visibility = View.VISIBLE
@@ -182,7 +190,7 @@ class GameFragment : Fragment() {
     private fun playBackgroundMusic() {
         mediaPlayer = MediaPlayer.create(requireContext(), R.raw.background_music)
         mediaPlayer?.isLooping = true
-        mediaPlayer?.setVolume(0.1f, 0.1f)
+        mediaPlayer?.setVolume(NORMAL_VOLUME, NORMAL_VOLUME)
         mediaPlayer?.start()
     }
 
@@ -476,126 +484,43 @@ class GameFragment : Fragment() {
 
     private fun playLetterAudio(id: Int) {
         // First check if we have this audio in our cache
-        val cachedAudio = audioDataCache[id.toLong()]
-        if (cachedAudio != null && cachedAudio.isNotEmpty()) {
-            Log.d("GameFragment", "⭐ Playing letter audio from cache for ID: $id")
-            playAudioFromBase64(cachedAudio)
+        val cachedAudio = audioManager.getAudioFromCache(id.toLong())
+        if (cachedAudio != null) {
+            Log.d("GameFragment", "Playing letter audio from cache for ID: $id")
+            audioManager.playAudioFromBase64(cachedAudio)
             return
         }
 
-        // Try to find the button with this ID to get the cached audio
-        for (i in 0 until optionsContainer.childCount) {
-            val button = optionsContainer.getChildAt(i)
-            if (button.tag is String) {
-                val audioBase64 = button.tag as String
-                if (audioBase64.isNotEmpty()) {
-                    Log.d("GameFragment", "⭐ Playing letter audio from button tag for ID: $id")
-                    playAudioFromBase64(audioBase64)
-                    return
-                }
-            }
-        }
-
-        // Fallback to the URL method if we don't have cached audio
+        // Fallback to the URL method
         val audioUrl = getAudioUrl(id.toLong())
-        Log.d("GameFragment", "⭐ Playing letter audio from URL for ID: $id")
-        playQuestionAudio(audioUrl)
+        Log.d("GameFragment", "Playing letter audio from URL for ID: $id")
+        audioManager.playQuestionAudio(audioUrl)
     }
 
-    private fun playAudioFromBase64(audioBase64: String) {
-        // Pause background music
-        mediaPlayer?.pause()
-
-        // Release any existing question MediaPlayer
-        questionMediaPlayer?.release()
-
-        try {
-            // Decode the Base64 audio data
-            val audioBytes = android.util.Base64.decode(audioBase64, android.util.Base64.DEFAULT)
-
-            // Create a temporary file to play the audio
-            val tempFile = File.createTempFile("audio", ".wav", requireContext().cacheDir)
-            tempFile.deleteOnExit()
-            tempFile.writeBytes(audioBytes)
-
-            // Initialize and play the question audio
-            questionMediaPlayer = MediaPlayer().apply {
-                setDataSource(tempFile.path)
-                setOnPreparedListener { mp ->
-                    mp.setVolume(0.5f, 0.5f)
-                    mp.start()
-                }
-                setOnCompletionListener {
-                    // Resume background music when question audio finishes
-                    mediaPlayer?.start()
-                    tempFile.delete()
-                }
-                setOnErrorListener { mp, what, extra ->
-                    Log.e("GameFragment", "Question audio error: what=$what, extra=$extra")
-                    // Resume background music on error
-                    mediaPlayer?.start()
-                    tempFile.delete()
-                    true
-                }
-                prepareAsync()
-            }
-        } catch (e: Exception) {
-            Log.e("GameFragment", "Error playing audio from Base64: ${e.message}", e)
-            mediaPlayer?.start() // Resume background music on error
-        }
-    }
 
     private fun playCorrectAudio() {
         if (gameData == null) {
-            Log.e("GameFragment", "❌ Cannot play correct audio: gameData is null")
+            Log.e("GameFragment", "Cannot play correct audio: gameData is null")
             return
         }
 
         val correctId = gameData!!.correctId.toLong()
-        Log.d("GameFragment", "⭐ Attempting to play correct audio for ID: $correctId")
 
         // First check if we have this audio in our cache
-        val cachedAudio = audioDataCache[correctId]
+        val cachedAudio = audioManager.getAudioFromCache(correctId)
         if (!cachedAudio.isNullOrEmpty()) {
-            Log.d("GameFragment", "⭐ Playing correct audio from cache")
-            playAudioFromBase64(cachedAudio)
+            Log.d("GameFragment", "Playing correct audio from cache")
+            audioManager.playAudioFromBase64(cachedAudio)
             return
         }
 
         // Fallback to the URL method
         val audioUrl = getAudioUrl(correctId)
-        Log.d("GameFragment", "⭐ Playing correct audio from URL: $audioUrl")
-        playQuestionAudio(audioUrl)
+        Log.d("GameFragment", "Playing correct audio from URL: $audioUrl")
+        audioManager.playQuestionAudio(audioUrl)
     }
 
 
-    private fun playQuestionAudio(audioUrl: String) {
-        // Pause background music
-        mediaPlayer?.pause()
-
-        // Release any existing question MediaPlayer
-        questionMediaPlayer?.release()
-
-        // Initialize and play the question audio
-        questionMediaPlayer = MediaPlayer().apply {
-            setDataSource(audioUrl)
-            setOnPreparedListener { mp ->
-                mp.setVolume(0.5f, 0.5f) // Lower the volume of question audio
-                mp.start()
-            }
-            setOnCompletionListener {
-                // Resume background music when question audio finishes
-                mediaPlayer?.start()
-            }
-            setOnErrorListener { mp, what, extra ->
-                Log.e("GameFragment", "Question audio error: what=$what, extra=$extra")
-                // Resume background music on error
-                mediaPlayer?.start()
-                true
-            }
-            prepareAsync()
-        }
-    }
 
     private fun updateBackgroundAnimation() {
         val backgroundAnimationView = requireView().findViewById<LottieAnimationView>(R.id.backgroundAnimation)
@@ -638,12 +563,15 @@ class GameFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer?.release()
-        questionMediaPlayer?.release()
+
+        // Release audio resources
+        audioManager.release()
         soundPool?.release()
+
         // Ensure session is ended when fragment is destroyed
         endCurrentSession()
     }
+
 
     // For images
     private fun getImageUrl(id: Long): String {
